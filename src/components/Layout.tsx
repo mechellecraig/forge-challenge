@@ -16,7 +16,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Ironworks" className="h-8 w-8 object-contain" />
+            <img src="/logo.png" alt="Ironworks" className="h-12 w-12 object-contain" />
             <span className="font-display text-white text-lg tracking-wider uppercase hidden sm:block">
               Ironworks Fitness
             </span>
