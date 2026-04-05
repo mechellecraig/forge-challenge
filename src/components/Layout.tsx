@@ -17,7 +17,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="Ironworks" className="h-12 w-12 object-contain border-2 border-[#FF5500] rounded-md" />
-            <span className="font-display text-white text-lg tracking-wider uppercase hidden sm:block">
+            <span className="font-display text-white text-2xl tracking-wider uppercase hidden sm:block">
               Ironworks Fitness
             </span>
           </Link>
