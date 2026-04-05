@@ -8,7 +8,7 @@ export default {
         "primary-foreground": "#ffffff",
       },
       fontFamily: {
-        display: ["Impact", "Arial Narrow", "sans-serif"],
+        display: ["Oswald", "Arial Narrow", "sans-serif"],
       },
     },
   },
