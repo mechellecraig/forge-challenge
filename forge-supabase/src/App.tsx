@@ -1,0 +1,21 @@
+import { Switch, Route } from "wouter";
+import { Layout } from "@/components/Layout";
+import Dashboard from "@/pages/Dashboard";
+import Leaderboard from "@/pages/Leaderboard";
+import LogActivity from "@/pages/LogActivity";
+import MyStats from "@/pages/MyStats";
+import Admin from "@/pages/Admin";
+
+export default function App() {
+  return (
+    <Layout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/leaderboard" component={Leaderboard} />
+        <Route path="/log" component={LogActivity} />
+        <Route path="/me" component={MyStats} />
+        <Route path="/admin" component={Admin} />
+      </Switch>
+    </Layout>
+  );
+}
