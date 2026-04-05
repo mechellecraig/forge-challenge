@@ -12,7 +12,7 @@ const NAV = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(rgba(10,10,10,0.82) 0%, rgba(10,10,10,0.88) 100%), url('/gym-bg.png') center/cover no-repeat fixed" }}>
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
