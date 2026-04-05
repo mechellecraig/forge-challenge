@@ -18,7 +18,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link href="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="Ironworks" className="h-8 w-8 object-contain" />
             <span className="font-display text-white text-lg tracking-wider uppercase hidden sm:block">
-              Forge Challenge
+              Ironworks Fitness
             </span>
           </Link>
           <nav className="flex items-center gap-1">
