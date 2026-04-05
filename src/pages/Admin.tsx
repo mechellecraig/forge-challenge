@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, createTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, verifyPin, changePin } from "@/lib/api";
-import { ShieldAlert, Trash2 } from "lucide-react";
+import { getTeams, createTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, verifyPin, changePin, getLogs } from "@/lib/api";
+import { calcDayPoints } from "@/lib/points";
+import { ShieldAlert, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 
-type Tab = "teams" | "members" | "bonuses" | "pin";
+type Tab = "teams" | "members" | "bonuses" | "activity" | "pin";
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -63,7 +64,7 @@ export default function Admin() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(["teams", "members", "bonuses", "pin"] as Tab[]).map(t => (
+        {(["teams", "members", "activity", "bonuses", "pin"] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
               tab === t ? "bg-primary text-white" : "border border-white/10 text-white/40 hover:text-white hover:border-white/20"
@@ -75,8 +76,128 @@ export default function Admin() {
 
       {tab === "teams" && <ManageTeams />}
       {tab === "members" && <ManageMembers />}
+      {tab === "activity" && <MemberActivity />}
       {tab === "bonuses" && <ManageBonuses />}
       {tab === "pin" && <ChangePin />}
+    </div>
+  );
+}
+
+function MemberActivity() {
+  const { data: members, isLoading: loadingMembers } = useQuery({ queryKey: ["members"], queryFn: getMembers });
+  const { data: teams } = useQuery({ queryKey: ["teams"], queryFn: getTeams });
+  const { data: logs, isLoading: loadingLogs } = useQuery({ queryKey: ["logs", "all"], queryFn: () => getLogs() });
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const isLoading = loadingMembers || loadingLogs;
+  const getTeamName = (tid: string) => teams?.find(t => t.id === tid)?.name || "Unknown";
+
+  const memberLogs = (memberId: string) =>
+    logs?.filter(l => l.member_id === memberId).sort((a, b) => a.week - b.week || a.day_index - b.day_index) ?? [];
+
+  const memberTotalPoints = (memberId: string) => {
+    const member = members?.find(m => m.id === memberId);
+    if (!member) return 0;
+    return memberLogs(memberId).reduce((sum, log) => sum + calcDayPoints({
+      walk: log.walk, run: log.run, bike: log.bike,
+      meal_plan: log.meal_plan, avg_hr: log.avg_hr,
+      day_index: log.day_index, age: member.age,
+    }), 0);
+  };
+
+  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  if (isLoading) return <p className="text-white/30 text-sm py-8 text-center">Loading activity...</p>;
+
+  return (
+    <div className="space-y-3">
+      <p className="text-white/40 text-xs uppercase tracking-wider font-bold mb-4">
+        {members?.length || 0} members · click a row to expand logs
+      </p>
+      {!members?.length && (
+        <p className="text-white/30 text-sm text-center py-8">No members yet.</p>
+      )}
+      {members?.map(member => {
+        const mLogs = memberLogs(member.id);
+        const pts = Math.round(memberTotalPoints(member.id) * 10) / 10;
+        const isOpen = expanded === member.id;
+
+        return (
+          <div key={member.id} className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setExpanded(isOpen ? null : member.id)}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.03] transition-colors"
+            >
+              <div className="flex items-center gap-4 text-left">
+                <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
+                  {member.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="font-semibold text-white">{member.name}</div>
+                  <div className="text-xs text-primary font-bold uppercase tracking-wider mt-0.5">{getTeamName(member.team_id)}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="text-right hidden sm:block">
+                  <div className="font-mono font-bold text-white">{pts.toLocaleString()} pts</div>
+                  <div className="text-xs text-white/30">{mLogs.length} log{mLogs.length !== 1 ? "s" : ""}</div>
+                </div>
+                {isOpen ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
+              </div>
+            </button>
+
+            {isOpen && (
+              <div className="border-t border-white/10">
+                {mLogs.length === 0 ? (
+                  <p className="text-white/30 text-sm text-center py-6">No activity logged yet.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm min-w-[550px]">
+                      <thead>
+                        <tr className="bg-black/30 text-xs uppercase tracking-wider text-white/30">
+                          <th className="px-4 py-2 text-left font-bold">Wk</th>
+                          <th className="px-4 py-2 text-left font-bold">Day</th>
+                          <th className="px-4 py-2 text-right font-bold">Walk</th>
+                          <th className="px-4 py-2 text-right font-bold">Run</th>
+                          <th className="px-4 py-2 text-right font-bold">Bike</th>
+                          <th className="px-4 py-2 text-center font-bold">Meal</th>
+                          <th className="px-4 py-2 text-right font-bold">HR</th>
+                          <th className="px-4 py-2 text-right font-bold text-white/60">Pts</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mLogs.map((log, i) => {
+                          const pts = Math.round(calcDayPoints({
+                            walk: log.walk, run: log.run, bike: log.bike,
+                            meal_plan: log.meal_plan, avg_hr: log.avg_hr,
+                            day_index: log.day_index, age: member.age,
+                          }) * 10) / 10;
+                          return (
+                            <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02]">
+                              <td className="px-4 py-2.5 text-white/60">{log.week}</td>
+                              <td className="px-4 py-2.5 text-white/60">{DAYS[log.day_index] ?? log.day_index}</td>
+                              <td className="px-4 py-2.5 text-right text-white/50">{log.walk > 0 ? `${log.walk}mi` : "—"}</td>
+                              <td className="px-4 py-2.5 text-right text-white/50">{log.run > 0 ? `${log.run}mi` : "—"}</td>
+                              <td className="px-4 py-2.5 text-right text-white/50">{log.bike > 0 ? `${log.bike}mi` : "—"}</td>
+                              <td className="px-4 py-2.5 text-center">
+                                {log.meal_plan
+                                  ? <span className="text-green-400 font-bold">✓</span>
+                                  : <span className="text-white/20">—</span>}
+                              </td>
+                              <td className="px-4 py-2.5 text-right text-white/50">{log.avg_hr > 0 ? log.avg_hr : "—"}</td>
+                              <td className="px-4 py-2.5 text-right font-mono font-bold text-primary">{pts}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
