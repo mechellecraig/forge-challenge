@@ -65,3 +65,4 @@ The app runs at http://localhost:5173
 | Meal plan Sat–Sun | 5 pts/day |
 | HR zone session (≥60% max HR) | +5 pts |
 | Admin bonus award | custom pts |
+# Sun Apr  5 09:28:57 PM UTC 2026
