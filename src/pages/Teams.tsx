@@ -86,7 +86,7 @@ export default function Teams() {
                         </div>
                         <span className="text-white font-medium">{m.name}</span>
                       </div>
-                      <span className="text-xs text-white/30">Age {m.age}</span>
+                      
                     </div>
                   ))
                 )}
