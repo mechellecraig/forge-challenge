@@ -47,7 +47,7 @@ export default function MyStats() {
     return { totalPoints, totalMiles, totalWalk, totalRun, totalBike, daysLogged: enriched.length, mealPlanDays, hrBonusDays, byWeek, maxWeekPoints: Math.max(...byWeek.map(w => w.points), 1) };
   }, [logs, selectedMember]);
 
-  const sel = "w-full bg-white/5 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary";
+  const sel = "w-full bg-white border border-white/20 text-black rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary";
 
   return (
     <div className="space-y-8 pb-12">

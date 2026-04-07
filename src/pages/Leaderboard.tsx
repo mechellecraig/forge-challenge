@@ -4,31 +4,47 @@ import { getLeaderboard } from "@/lib/api";
 import { Trophy, Shield, Medal } from "lucide-react";
 
 export default function Leaderboard() {
-  const [week, setWeek] = useState(1);
+  const [week, setWeek] = useState<number | "all">("all");
+
   const { data: leaderboard, isLoading } = useQuery({
-    queryKey: ["leaderboard", week], queryFn: () => getLeaderboard(week),
+    queryKey: ["leaderboard", week],
+    queryFn: () => getLeaderboard(week === "all" ? undefined : week),
   });
+
   const maxPoints = leaderboard?.entries[0]?.totalPoints || 1;
 
   return (
     <div className="space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold uppercase tracking-wider text-white flex items-center gap-3">
-            <Trophy className="w-10 h-10 text-primary" /> Leaderboard
+          <h1 className="text-2xl md:text-3xl font-display font-bold uppercase tracking-wider text-white flex items-center gap-3">
+            <Trophy className="w-8 h-8 text-primary" /> Leaderboard
           </h1>
-          <p className="text-white/50 text-lg mt-2">Rankings and points breakdown by week.</p>
+          <p className="text-white/50 mt-2">
+            {week === "all" ? "All-time totals across every week." : `Rankings and points for Week ${week}.`}
+          </p>
         </div>
         <div className="w-full md:w-48">
-          <label className="text-xs font-bold uppercase tracking-wider text-white/40 mb-1 block">Week</label>
-          <select value={week} onChange={e => setWeek(parseInt(e.target.value))}
-            className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
+          <label className="text-xs font-bold uppercase tracking-wider text-white/40 mb-1 block">Period</label>
+          <select
+            value={week}
+            onChange={e => setWeek(e.target.value === "all" ? "all" : parseInt(e.target.value))}
+            className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Weeks (Total)</option>
             {Array.from({ length: 12 }, (_, i) => (
               <option key={i + 1} value={i + 1}>Week {i + 1}</option>
             ))}
           </select>
         </div>
       </div>
+
+      {week === "all" && (
+        <div className="bg-primary/10 border border-primary/20 rounded-xl px-5 py-3 text-sm text-primary font-semibold flex items-center gap-2">
+          <Trophy className="w-4 h-4 flex-shrink-0" />
+          Showing cumulative totals across all 12 weeks of the challenge.
+        </div>
+      )}
 
       {!isLoading && (leaderboard?.entries.length ?? 0) > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -82,7 +98,7 @@ export default function Leaderboard() {
               ) : !leaderboard?.entries.length ? (
                 <tr><td colSpan={6} className="p-12 text-center">
                   <Shield className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                  <p className="text-white/30 text-lg">The forge is cold this week.</p>
+                  <p className="text-white/30 text-lg">No data yet — get out there and log!</p>
                 </td></tr>
               ) : leaderboard.entries.map(entry => (
                 <tr key={entry.teamId} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
