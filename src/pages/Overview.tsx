@@ -1,4 +1,4 @@
-import { Info, Footprints, PersonStanding, Bike, UtensilsCrossed, HeartPulse, Star, Users, Trophy, Activity, ShieldAlert, BarChart3 } from "lucide-react";
+import { Info, Footprints, PersonStanding, Bike, UtensilsCrossed, HeartPulse, Star, Users, Trophy, Activity, BarChart3 } from "lucide-react";
 
 const POINTS = [
   { icon: Footprints, label: "Walk", detail: "1 pt per mile", color: "text-blue-400" },
@@ -12,24 +12,9 @@ const POINTS = [
 
 const HOW_TO = [
   {
-    icon: Users,
-    title: "Find Your Team",
-    desc: "Go to My Stats and select your team from the dropdown, then select your name. Your personal dashboard will load automatically.",
-  },
-  {
     icon: Activity,
     title: "Log Your Activity",
     desc: "Click Log Activity in the nav. Pick your team, your name, the week, and the day. Enter your miles walked, run, or biked. Check Meal Plan if you stuck to it, and enter your average heart rate if you tracked it.",
-  },
-  {
-    icon: HeartPulse,
-    title: "Earn HR Zone Bonus",
-    desc: "If your average heart rate during a session was at least 60% of your maximum heart rate (220 minus your age), you automatically earn +5 bonus points for that day.",
-  },
-  {
-    icon: Trophy,
-    title: "Check the Leaderboard",
-    desc: "The Leaderboard page shows team standings. Use the Period selector to view a specific week or switch to All Weeks (Total) to see the full 12-week cumulative score.",
   },
   {
     icon: BarChart3,
@@ -37,9 +22,14 @@ const HOW_TO = [
     desc: "My Stats shows your total points, miles logged, meal plan streak, HR zone days, and a week-by-week breakdown of your performance across the challenge.",
   },
   {
-    icon: ShieldAlert,
-    title: "Admin Features",
-    desc: "Admins can create and manage teams and members, award bonus points, and view a full activity log for every member. Access is protected by a PIN.",
+    icon: Trophy,
+    title: "Check the Leaderboard",
+    desc: "The Leaderboard page shows team standings. Use the Period selector to view a specific week or switch to All Weeks (Total) to see the full 12-week cumulative score.",
+  },
+  {
+    icon: Users,
+    title: "Find Your Team",
+    desc: "Go to My Stats and select your team from the dropdown, then select your name. Your personal dashboard will load automatically.",
   },
 ];
 
