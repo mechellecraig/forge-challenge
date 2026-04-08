@@ -17,7 +17,7 @@ export default function Dashboard() {
     <div className="space-y-8 pb-12">
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold uppercase tracking-wider mb-2 text-white">
-          Forge Challenge
+          Intensity Challenge
         </h1>
         <p className="text-white/50 text-lg">Real-time competition overview · Week {week}</p>
       </div>

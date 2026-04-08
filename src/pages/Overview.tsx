@@ -51,14 +51,14 @@ export default function Overview() {
         <h1 className="text-2xl md:text-3xl font-display font-bold uppercase tracking-wider text-white flex items-center gap-3">
           <Info className="w-8 h-8 text-primary" /> Program Overview
         </h1>
-        <p className="text-white/50 mt-1">Everything you need to know about the Ironworks Forge Challenge.</p>
+        <p className="text-white/50 mt-1">Everything you need to know about the Ironworks Intensity Challenge.</p>
       </div>
 
       {/* About */}
       <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
         <h2 className="font-display font-bold uppercase tracking-wider text-primary text-lg">About the Challenge</h2>
         <p className="text-white/70 leading-relaxed">
-          The <span className="text-white font-semibold">Ironworks Forge Challenge</span> is a 12-week team fitness competition
+          The <span className="text-white font-semibold">Ironworks Intensity Challenge</span> is a 12-week team fitness competition
           designed to build healthy habits through friendly competition. Members earn points by logging physical activity,
           following a meal plan, and pushing into heart-rate training zones. Teams accumulate points across all weeks, with
           the leading team crowned champion at the end of Week 12.

@@ -2,10 +2,10 @@ import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Trophy, Users, Info, Activity, User, ShieldAlert } from "lucide-react";
 
 const NAV = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Overview", icon: Info },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/teams", label: "Teams", icon: Users },
-  { href: "/overview", label: "Overview", icon: Info },
   { href: "/log", label: "Log Activity", icon: Activity },
   { href: "/me", label: "My Stats", icon: User },
   { href: "/admin", label: "Admin", icon: ShieldAlert },
@@ -42,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">{children}</main>
       <footer className="border-t border-white/5 py-4 text-center text-xs text-white/20">
-        Ironworks Fitness · Forge Challenge · 12-Week Program
+        Ironworks Fitness · Intensity Challenge · 12-Week Program
       </footer>
     </div>
   );
