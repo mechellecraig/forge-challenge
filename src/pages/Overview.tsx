@@ -7,7 +7,7 @@ const POINTS = [
   { icon: UtensilsCrossed, label: "Meal Plan (Mon–Fri)", detail: "3 pts per day", color: "text-orange-400" },
   { icon: UtensilsCrossed, label: "Meal Plan (Sat–Sun)", detail: "5 pts per day", color: "text-orange-400" },
   { icon: HeartPulse, label: "HR Zone Session", detail: "+5 pts (≥60% max HR)", color: "text-red-400" },
-  { icon: Star, label: "Admin Bonus", detail: "Custom pts awarded by admin", color: "text-primary" },
+  { icon: Star, label: "Challenge Bonus", detail: "Monthly sports & weekly challenge pts", color: "text-primary" },
 ];
 
 const HOW_TO = [
