@@ -52,6 +52,33 @@ export default function Overview() {
           The challenge runs <span className="text-white font-semibold">Monday through Sunday</span> each week.
           Log activity for any day of the current or past weeks. Points are calculated automatically — just enter your miles and habits.
         </p>
+        <div className="border-t border-white/10 pt-4 space-y-3">
+          <h3 className="text-white font-semibold text-sm uppercase tracking-wider">Monthly Sports Challenges</h3>
+          <p className="text-white/70 leading-relaxed">
+            Each month features a rotating sport challenge structured across four weeks:
+          </p>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {[
+              { week: "Week 1", label: "Learn the Sport", desc: "Introduction and skill-building" },
+              { week: "Weeks 2–3", label: "Competitive Play", desc: "Put your skills to the test" },
+              { week: "Week 4", label: "Tournament", desc: "Bonus points awarded to top performers" },
+            ].map(({ week, label, desc }) => (
+              <div key={week} className="flex gap-3 bg-white/[0.03] border border-white/5 rounded-lg px-4 py-3">
+                <div className="flex-shrink-0 w-20 text-xs font-bold text-primary uppercase tracking-wider pt-0.5">{week}</div>
+                <div>
+                  <div className="text-white text-sm font-semibold">{label}</div>
+                  <div className="text-white/40 text-xs mt-0.5">{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="border-t border-white/10 pt-4">
+          <p className="text-white/70 leading-relaxed">
+            A <span className="text-white font-semibold">weekly bonus challenge</span> will also be announced each week —
+            complete it to earn extra points for your team.
+          </p>
+        </div>
       </div>
 
       {/* Points structure */}
