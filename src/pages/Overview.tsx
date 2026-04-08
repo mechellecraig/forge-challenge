@@ -1,4 +1,4 @@
-import { Info, Footprints, PersonStanding, Bike, UtensilsCrossed, HeartPulse, Star, Users, Trophy, Activity, BarChart3 } from "lucide-react";
+import { Info, Footprints, PersonStanding, Bike, UtensilsCrossed, HeartPulse, Star, Trophy, Activity, BarChart3 } from "lucide-react";
 
 const POINTS = [
   { icon: Footprints, label: "Walk", detail: "1 pt per mile", color: "text-blue-400" },
@@ -25,11 +25,6 @@ const HOW_TO = [
     icon: Trophy,
     title: "Check the Leaderboard",
     desc: "The Leaderboard page shows team standings. Use the Period selector to view a specific week or switch to All Weeks (Total) to see the full 12-week cumulative score.",
-  },
-  {
-    icon: Users,
-    title: "Find Your Team",
-    desc: "Go to My Stats and select your team from the dropdown, then select your name. Your personal dashboard will load automatically.",
   },
 ];
 
