@@ -1,9 +1,8 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Trophy, Users, Info, Activity, User, ShieldAlert } from "lucide-react";
+import { Trophy, Users, Info, Activity, User, ShieldAlert } from "lucide-react";
 
 const NAV = [
   { href: "/", label: "Overview", icon: Info },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/teams", label: "Teams", icon: Users },
   { href: "/log", label: "Log Activity", icon: Activity },

@@ -3,15 +3,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTeams, createTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, verifyPin, changePin, getLogs } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
 import { ShieldAlert, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import Dashboard from "@/pages/Dashboard";
 
-type Tab = "teams" | "members" | "bonuses" | "activity" | "pin";
+type Tab = "dashboard" | "teams" | "members" | "bonuses" | "activity" | "pin";
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
   const [pinErr, setPinErr] = useState("");
   const [checking, setChecking] = useState(false);
-  const [tab, setTab] = useState<Tab>("teams");
+  const [tab, setTab] = useState<Tab>("dashboard");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -64,7 +65,7 @@ export default function Admin() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(["teams", "members", "activity", "bonuses", "pin"] as Tab[]).map(t => (
+        {(["dashboard", "teams", "members", "activity", "bonuses", "pin"] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
               tab === t ? "bg-primary text-white" : "border border-white/10 text-white/40 hover:text-white hover:border-white/20"
@@ -74,6 +75,7 @@ export default function Admin() {
         ))}
       </div>
 
+      {tab === "dashboard" && <Dashboard />}
       {tab === "teams" && <ManageTeams />}
       {tab === "members" && <ManageMembers />}
       {tab === "activity" && <MemberActivity />}

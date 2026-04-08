@@ -1,6 +1,5 @@
 import { Switch, Route } from "wouter";
 import { Layout } from "@/components/Layout";
-import Dashboard from "@/pages/Dashboard";
 import Leaderboard from "@/pages/Leaderboard";
 import Teams from "@/pages/Teams";
 import Overview from "@/pages/Overview";
@@ -13,7 +12,6 @@ export default function App() {
     <Layout>
       <Switch>
         <Route path="/" component={Overview} />
-        <Route path="/dashboard" component={Dashboard} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/teams" component={Teams} />
         <Route path="/log" component={LogActivity} />
