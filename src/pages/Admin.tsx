@@ -337,13 +337,19 @@ function ManageBonuses() {
   const [teamId, setTeamId] = useState("");
   const [week, setWeek] = useState("1");
   const [points, setPoints] = useState("50");
+  const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!teamId) return;
     setSaving(true);
-    try { await createBonus({ team_id: teamId, week: parseInt(week), points: parseInt(points) }); setTeamId(""); qc.invalidateQueries({ queryKey: ["bonuses"] }); qc.invalidateQueries({ queryKey: ["leaderboard"] }); }
+    try {
+      await createBonus({ team_id: teamId, week: parseInt(week), points: parseInt(points), description });
+      setTeamId(""); setDescription("");
+      qc.invalidateQueries({ queryKey: ["bonuses"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
+    }
     finally { setSaving(false); }
   }
 
@@ -364,6 +370,11 @@ function ManageBonuses() {
               {teams?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
+          <div>
+            <label className={lbl}>Description</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+              placeholder="e.g. Week 4 tournament winner" className={inp} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div><label className={lbl}>Week</label><input type="number" min="1" max="12" value={week} onChange={e => setWeek(e.target.value)} className={inp} /></div>
             <div><label className={lbl}>Points</label><input type="number" value={points} onChange={e => setPoints(e.target.value)} className={`${inp} text-primary font-mono`} /></div>
@@ -381,7 +392,8 @@ function ManageBonuses() {
             <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/5">
               <div>
                 <div className="font-semibold text-white">{getTeamName(b.team_id)}</div>
-                <div className="text-xs text-white/40 uppercase tracking-wider mt-0.5">Week {b.week}</div>
+                {b.description && <div className="text-xs text-white/60 mt-0.5">{b.description}</div>}
+                <div className="text-xs text-white/30 uppercase tracking-wider mt-0.5">Week {b.week}</div>
               </div>
               <div className="font-mono text-lg text-green-400 font-bold">+{b.points}</div>
             </div>

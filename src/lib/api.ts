@@ -7,7 +7,7 @@ export type Log = {
   id?: string; member_id: string; week: number; day_index: number;
   walk: number; run: number; bike: number; meal_plan: boolean; avg_hr: number;
 };
-export type Bonus = { id: string; team_id: string; week: number; points: number };
+export type Bonus = { id: string; team_id: string; week: number; points: number; description: string };
 export type LeaderboardEntry = {
   teamId: string; teamName: string; memberCount: number;
   activityPoints: number; bonusPoints: number; totalPoints: number; rank: number;
@@ -87,7 +87,7 @@ export async function getBonuses(): Promise<Bonus[]> {
   return data;
 }
 
-export async function createBonus(b: { team_id: string; week: number; points: number }): Promise<Bonus> {
+export async function createBonus(b: { team_id: string; week: number; points: number; description: string }): Promise<Bonus> {
   const { data, error } = await supabase.from("bonuses").insert(b).select().single();
   if (error) throw error;
   return data;
