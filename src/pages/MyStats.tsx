@@ -32,7 +32,7 @@ export default function MyStats() {
     const totalBike = Math.round(enriched.reduce((s, l) => s + l.bike, 0) * 10) / 10;
     const totalMiles = Math.round((totalWalk + totalRun + totalBike) * 10) / 10;
     const mealPlanDays = enriched.filter(l => l.meal_plan).length;
-    const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * 0.6).length;
+    const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * 0.75).length;
     const weeks = [...new Set(enriched.map(l => l.week))].sort((a, b) => a - b);
     const byWeek = weeks.map(w => {
       const wl = enriched.filter(l => l.week === w);

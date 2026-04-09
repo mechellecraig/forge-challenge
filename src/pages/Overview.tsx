@@ -1,12 +1,11 @@
-import { Info, Footprints, PersonStanding, Bike, UtensilsCrossed, HeartPulse, Star, Trophy, Activity, BarChart3 } from "lucide-react";
+import { Info, Footprints, Bike, UtensilsCrossed, HeartPulse, Star, Trophy, Activity, BarChart3 } from "lucide-react";
 
 const POINTS = [
-  { icon: Footprints, label: "Walk", detail: "1 pt per mile", color: "text-blue-400" },
-  { icon: PersonStanding, label: "Run", detail: "2 pts per mile", color: "text-green-400" },
-  { icon: Bike, label: "Bike", detail: "1.5 pts per mile", color: "text-yellow-400" },
+  { icon: Footprints, label: "Walk / Run", detail: "3 pts per mile", color: "text-blue-400" },
+  { icon: Bike, label: "Bike", detail: "1 pt per mile", color: "text-yellow-400" },
   { icon: UtensilsCrossed, label: "Meal Plan (Mon–Fri)", detail: "3 pts per day", color: "text-orange-400" },
   { icon: UtensilsCrossed, label: "Meal Plan (Sat–Sun)", detail: "5 pts per day", color: "text-orange-400" },
-  { icon: HeartPulse, label: "HR Zone Session", detail: "+5 pts (≥60% max HR)", color: "text-red-400" },
+  { icon: HeartPulse, label: "HR Zone Session", detail: "+5 pts (≥75% max HR)", color: "text-red-400" },
   { icon: Star, label: "Challenge Bonus", detail: "Monthly sports & weekly challenge pts", color: "text-primary" },
 ];
 

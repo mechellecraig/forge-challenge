@@ -118,8 +118,14 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
 
   const memberMap = new Map(members.map(m => [m.id, m]));
 
-  // Activity points per team
-  const teamActivity = new Map<string, number>();
+  // Member count per team
+  const memberCount = new Map<string, number>();
+  members.forEach(m => {
+    memberCount.set(m.team_id, (memberCount.get(m.team_id) || 0) + 1);
+  });
+
+  // Activity points per member
+  const memberActivity = new Map<string, number>();
   allLogs.forEach(log => {
     const member = memberMap.get(log.member_id);
     if (!member) return;
@@ -128,7 +134,17 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
     });
-    teamActivity.set(member.team_id, (teamActivity.get(member.team_id) || 0) + pts);
+    memberActivity.set(log.member_id, (memberActivity.get(log.member_id) || 0) + pts);
+  });
+
+  // Team activity = average of all member points
+  const teamActivity = new Map<string, number>();
+  members.forEach(m => {
+    teamActivity.set(m.team_id, (teamActivity.get(m.team_id) || 0) + (memberActivity.get(m.id) || 0));
+  });
+  new Set(members.map(m => m.team_id)).forEach(teamId => {
+    const count = memberCount.get(teamId) || 1;
+    teamActivity.set(teamId, (teamActivity.get(teamId) || 0) / count);
   });
 
   // Bonus points per team (filtered by week if provided)
@@ -138,12 +154,6 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
     .forEach(b => {
       teamBonus.set(b.team_id, (teamBonus.get(b.team_id) || 0) + b.points);
     });
-
-  // Member count per team
-  const memberCount = new Map<string, number>();
-  members.forEach(m => {
-    memberCount.set(m.team_id, (memberCount.get(m.team_id) || 0) + 1);
-  });
 
   const entries: LeaderboardEntry[] = teams.map(team => {
     const activityPoints = Math.round((teamActivity.get(team.id) || 0) * 10) / 10;

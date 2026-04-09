@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTeams, getMembers, getLogs, upsertLog, deleteLog } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
-import { Activity, Footprints, Bike, PersonStanding, HeartPulse, Info } from "lucide-react";
+import { Activity, Footprints, Bike, HeartPulse, Info } from "lucide-react";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -15,8 +15,7 @@ export default function LogActivity() {
   const [memberId, setMemberId] = useState("");
   const [week, setWeek] = useState(1);
   const [dayIndex, setDayIndex] = useState(() => { const d = new Date().getDay(); return d === 0 ? 6 : d - 1; });
-  const [walk, setWalk] = useState("");
-  const [run, setRun] = useState("");
+  const [walkRun, setWalkRun] = useState("");
   const [bike, setBike] = useState("");
   const [mealPlan, setMealPlan] = useState(false);
   const [avgHr, setAvgHr] = useState("");
@@ -48,11 +47,11 @@ export default function LogActivity() {
     try {
       await upsertLog({
         member_id: memberId, week, day_index: dayIndex,
-        walk: parseFloat(walk) || 0, run: parseFloat(run) || 0,
+        walk: parseFloat(walkRun) || 0, run: 0,
         bike: parseFloat(bike) || 0, meal_plan: mealPlan,
         avg_hr: parseFloat(avgHr) || 0,
       });
-      setWalk(""); setRun(""); setBike(""); setMealPlan(false); setAvgHr("");
+      setWalkRun(""); setBike(""); setMealPlan(false); setAvgHr("");
       qc.invalidateQueries({ queryKey: ["logs"] });
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
@@ -73,13 +72,13 @@ export default function LogActivity() {
   }
 
   const previewPts = Math.round(calcDayPoints({
-    walk: parseFloat(walk) || 0, run: parseFloat(run) || 0,
+    walk: parseFloat(walkRun) || 0, run: 0,
     bike: parseFloat(bike) || 0, meal_plan: mealPlan,
     avg_hr: parseFloat(avgHr) || 0, day_index: dayIndex,
     age: selectedMember?.age || 30,
   }) * 10) / 10;
 
-  const hrTarget = selectedMember ? Math.round((220 - selectedMember.age) * 0.6) : 0;
+  const hrTarget = selectedMember ? Math.round((220 - selectedMember.age) * 0.75) : 0;
   const hrHit = parseFloat(avgHr) > 0 && parseFloat(avgHr) >= hrTarget;
 
   const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary";
@@ -123,11 +122,10 @@ export default function LogActivity() {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-white/50">
           {[
-            [Footprints, "Walk", "1 pt/mi"],
-            [PersonStanding, "Run", "2 pts/mi"],
-            [Bike, "Bike", "1.5 pts/mi"],
+            [Footprints, "Walk / Run", "3 pts/mi"],
+            [Bike, "Bike", "1 pt/mi"],
             [Activity, "Meal Plan", "3 pts M–F · 5 pts Sat/Sun"],
-            [HeartPulse, "HR Zone (≥60% max HR)", "+5 pts"],
+            [HeartPulse, "HR Zone (≥75% max HR)", "+5 pts"],
           ].map(([Icon, label, hint]: any) => (
             <div key={label} className="flex items-center gap-2">
               <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -172,10 +170,10 @@ export default function LogActivity() {
 
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 border-b border-white/10 pb-2 mb-4">Activity Miles</h3>
-          <div className="grid grid-cols-3 gap-4">
-            {([["walk", walk, setWalk], ["run", run, setRun], ["bike", bike, setBike]] as const).map(([name, val, setter]: any) => (
+          <div className="grid grid-cols-2 gap-4">
+            {([["Walk / Run", walkRun, setWalkRun], ["Bike", bike, setBike]] as const).map(([name, val, setter]: any) => (
               <div key={name}>
-                <label className={lbl}>{name}</label>
+                <label className={lbl}>{name} <span className="normal-case text-white/20 font-normal">(miles)</span></label>
                 <input type="number" min="0" step="0.1" value={val} onChange={e => setter(e.target.value)}
                   className={`${inp} font-mono text-lg text-center`} placeholder="0" />
               </div>
@@ -187,7 +185,7 @@ export default function LogActivity() {
           <div>
             <label className={lbl}>
               Avg Heart Rate (bpm)
-              {selectedMember && <span className="text-white/30 ml-1 normal-case">— zone target: ≥{hrTarget} bpm</span>}
+              {selectedMember && <span className="text-white/30 ml-1 normal-case">— 75% max HR: ≥{hrTarget} bpm</span>}
             </label>
             <input type="number" min="0" value={avgHr} onChange={e => setAvgHr(e.target.value)}
               className={inp} placeholder="e.g. 135" />

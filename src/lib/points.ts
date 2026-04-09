@@ -1,11 +1,13 @@
 export const POINTS = {
-  walk: 1,
-  run: 2,
-  bike: 1.5,
+  walk: 3,
+  run: 3,
+  bike: 1,
   meal_weekday: 3,
   meal_weekend: 5,
   hr_zone: 5,
 };
+
+export const HR_THRESHOLD = 0.75;
 
 export function calcDayPoints(log: {
   walk: number; run: number; bike: number;
@@ -18,7 +20,7 @@ export function calcDayPoints(log: {
   pts += log.bike * POINTS.bike;
   if (log.meal_plan) pts += log.day_index >= 5 ? POINTS.meal_weekend : POINTS.meal_weekday;
   if (log.avg_hr > 0 && log.age > 0) {
-    if (log.avg_hr >= (220 - log.age) * 0.6) pts += POINTS.hr_zone;
+    if (log.avg_hr >= (220 - log.age) * HR_THRESHOLD) pts += POINTS.hr_zone;
   }
   return pts;
 }
