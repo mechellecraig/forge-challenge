@@ -1,4 +1,6 @@
-import { useMemo } from "react";
+const fs = require('fs');
+
+fs.writeFileSync('src/pages/MyStats.tsx', `import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getTeams, getLogs } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
@@ -193,3 +195,6 @@ export default function MyStats() {
     </div>
   );
 }
+`);
+
+console.log('MyStats.tsx updated - now uses logged-in member automatically');
