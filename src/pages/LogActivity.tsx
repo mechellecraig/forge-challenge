@@ -85,7 +85,7 @@ export default function LogActivity() {
     age: member.age,
   }) * 10) / 10 : 0;
 
-  const hrTarget = member ? Math.round((220 - member.age) * 0.6) : 0;
+  const hrTarget = member ? Math.round((220 - member.age) * 0.75) : 0;
   const hrHit = parseFloat(avgHr) > 0 && parseFloat(avgHr) >= hrTarget;
 
   const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary";

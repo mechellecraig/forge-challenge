@@ -36,7 +36,7 @@ export default function MyStats() {
     const totalBike = Math.round(enriched.reduce((s, l) => s + l.bike, 0) * 10) / 10;
     const totalMiles = Math.round((totalWalk + totalRun + totalBike) * 10) / 10;
     const mealPlanDays = enriched.filter(l => l.meal_plan).length;
-    const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * 0.6).length;
+    const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * 0.75).length;
 
     const weeks = [...new Set(enriched.map(l => l.week))].sort((a, b) => a - b);
     const byWeek = weeks.map(w => {
@@ -79,7 +79,7 @@ export default function MyStats() {
       <div className="bg-white/5 border border-white/10 rounded-xl px-5 py-4 flex items-center justify-between">
         <div>
           <p className="text-white font-bold text-lg">{member.name}</p>
-          <p className="text-white/40 text-sm">{selectedTeam?.name} · Age {member.age} · HR zone: {Math.round((220 - member.age) * 0.6)}+ bpm</p>
+          <p className="text-white/40 text-sm">{selectedTeam?.name} · Age {member.age} · HR zone: {Math.round((220 - member.age) * 0.75)}+ bpm</p>
         </div>
         <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-lg">
           {member.name.charAt(0).toUpperCase()}
