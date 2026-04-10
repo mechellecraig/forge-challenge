@@ -187,9 +187,13 @@ export default function LogActivity() {
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 border-b border-white/10 pb-2 mb-4">Activity Miles</h3>
           <div className="grid grid-cols-3 gap-4">
-            {([["walk", walk, setWalk], ["run", run, setRun], ["bike", bike, setBike]] as [string, string, (v: string) => void][]).map(([name, val, setter]) => (
+            {([
+              ["Walk", "3 pts/mi", walk, setWalk],
+              ["Run", "3 pts/mi", run, setRun],
+              ["Bike", "1 pt/mi", bike, setBike],
+            ] as [string, string, string, (v: string) => void][]).map(([name, hint, val, setter]) => (
               <div key={name}>
-                <label className={lbl}>{name}</label>
+                <label className={lbl}>{name} <span className="text-white/20 normal-case font-normal">{hint}</span></label>
                 <input type="number" min="0" step="0.1" value={val}
                   onChange={e => setter(e.target.value)}
                   className={inp + " font-mono text-lg text-center"} placeholder="0" />
@@ -205,7 +209,7 @@ export default function LogActivity() {
               className={inp} placeholder="e.g. 135" />
             {parseFloat(avgHr) > 0 && (
               <p className={"text-xs mt-1.5 font-semibold " + (hrHit ? "text-green-400" : "text-orange-400")}>
-                {hrHit ? "HR zone hit -- +5 pts" : (hrTarget - parseFloat(avgHr)) + " bpm below target"}
+                {hrHit ? "HR zone hit — +5 pts" : (hrTarget - parseFloat(avgHr)) + " bpm below target"}
               </p>
             )}
           </div>
@@ -229,7 +233,7 @@ export default function LogActivity() {
 
         <button type="submit" disabled={saving}
           className="w-full h-12 rounded-xl bg-primary text-white font-display font-bold text-lg uppercase tracking-wider disabled:opacity-40 hover:bg-primary/90 transition-colors">
-          {saving ? "Forging..." : "Strike the Anvil -- Log Activity"}
+          {saving ? "Forging..." : "Strike the Anvil — Log Activity"}
         </button>
       </form>
     </div>
