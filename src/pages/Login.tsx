@@ -49,7 +49,7 @@ export default function Login() {
             {(["password", "magic"] as Mode[]).map(m => (
               <button key={m} onClick={() => { setMode(m); setMsg(null); }}
                 className={"flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors " + (mode === m ? "bg-primary text-white" : "text-white/40 hover:text-white")}>
-                {m === "password" ? "Password" : "Magic Link"}
+                {m === "password" ? "Password" : "Login Link"}
               </button>
             ))}
           </div>
@@ -73,14 +73,14 @@ export default function Login() {
             )}
             <button type="submit" disabled={loading}
               className="w-full h-12 rounded-xl bg-primary text-white font-display font-bold text-base uppercase tracking-wider disabled:opacity-40 hover:bg-primary/90 transition-colors">
-              {loading ? "..." : mode === "password" ? "Sign In" : "Send Magic Link"}
+              {loading ? "..." : mode === "password" ? "Sign In" : "Send Login Link"}
             </button>
           </form>
           {mode === "password" && (
             <p className="text-center text-xs text-white/30">
               No password?{" "}
               <button onClick={() => setMode("magic")} className="text-primary hover:text-primary/80 font-semibold">
-                Use a magic link instead
+                Use a login link instead
               </button>
             </p>
           )}

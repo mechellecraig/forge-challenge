@@ -63,7 +63,7 @@ export default function Profile() {
           <p className="text-sm font-bold text-white uppercase tracking-wider">Set a Password</p>
         </div>
         <p className="text-xs text-white/40">
-          Set a password so you can log in with email and password instead of requesting a magic link every time.
+          Set a password so you can log in with email and password instead of requesting a login link every time.
         </p>
         <form onSubmit={handleSetPassword} className="space-y-3">
           <div>
