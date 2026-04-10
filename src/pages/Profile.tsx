@@ -64,7 +64,7 @@ export default function Profile() {
 
   const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-3 text-sm focus:outline-none focus:border-primary";
   const lbl = "block text-xs uppercase tracking-wider text-white/40 font-bold mb-1.5";
-  const hrTarget = member ? Math.round((220 - member.age) * 0.6) : 0;
+  const hrTarget = member ? Math.round((220 - member.age) * 0.75) : 0;
 
   return (
     <div className="max-w-md mx-auto pb-12 space-y-6">
@@ -113,7 +113,7 @@ export default function Profile() {
           <p className="text-sm font-bold text-white uppercase tracking-wider">Update Age</p>
         </div>
         <p className="text-xs text-white/40">
-          Your age is used to calculate your heart rate zone target (60% of 220 minus age). Keep it accurate for correct points.
+          Your age is used to calculate your heart rate zone target (75% of 220 minus age). Keep it accurate for correct points.
         </p>
         <form onSubmit={handleUpdateAge} className="flex gap-3">
           <input type="number" min="10" max="100" value={age} onChange={e => setAge(e.target.value)}
