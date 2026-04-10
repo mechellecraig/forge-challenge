@@ -1,4 +1,6 @@
-import { Switch, Route, Redirect } from "wouter";
+const fs = require('fs');
+
+const appContent = `import { Switch, Route, Redirect } from "wouter";
 import { Layout } from "@/components/Layout";
 import { useAuth } from "@/lib/auth";
 import Leaderboard from "@/pages/Leaderboard";
@@ -47,3 +49,7 @@ export default function App() {
     </Layout>
   );
 }
+`;
+
+fs.writeFileSync('src/App.tsx', appContent);
+console.log('App.tsx updated successfully');
