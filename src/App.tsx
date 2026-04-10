@@ -50,7 +50,7 @@ export default function App() {
         <Route path="/me" component={MyStats} />
         <Route path="/admin" component={Admin} />
         <Route path="/profile" component={Profile} />
-        <Route><Redirect to="/" /></Route>
+        <Route><Redirect to="/leaderboard" /></Route>
       </Switch>
     </Layout>
   );

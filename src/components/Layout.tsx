@@ -3,7 +3,7 @@ import { LayoutDashboard, Trophy, Users, Activity, User, ShieldAlert, LogOut } f
 import { useAuth } from "@/lib/auth";
 
 const NAV = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Program Overview", icon: LayoutDashboard },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/teams", label: "Teams", icon: Users },
   { href: "/log", label: "Log Activity", icon: Activity },
