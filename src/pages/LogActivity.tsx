@@ -149,7 +149,7 @@ export default function LogActivity() {
         <p className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2 mb-3">
           <Info className="w-3.5 h-3.5" /> How Points Are Scored
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-white/50">
+        <div className="flex flex-col gap-1.5 text-xs">
           {([
             [Footprints, "Walk / Run", "3 pts per mile", "text-blue-400"],
             [Bike, "Bike", "1 pt per mile", "text-yellow-400"],
@@ -157,9 +157,12 @@ export default function LogActivity() {
             [UtensilsCrossed, "Meal Plan (Sat–Sun)", "5 pts per day", "text-orange-400"],
             [HeartPulse, "HR Zone Session", "+5 pts (≥75% max HR)", "text-red-400"],
           ] as [any, string, string, string][]).map(([Icon, label, hint, color]) => (
-            <div key={label} className="flex items-center gap-2">
-              <Icon className={`w-3.5 h-3.5 shrink-0 ${color}`} />
-              <span><span className="text-white font-semibold">{label}</span> — {hint}</span>
+            <div key={label} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 shrink-0">
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${color}`} />
+                <span className="text-white font-semibold whitespace-nowrap">{label}</span>
+              </div>
+              <span className="text-white/50 whitespace-nowrap">{hint}</span>
             </div>
           ))}
         </div>
