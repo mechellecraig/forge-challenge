@@ -8,9 +8,10 @@ import LogActivity from "@/pages/LogActivity";
 import MyStats from "@/pages/MyStats";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
+import SelectProfile from "@/pages/SelectProfile";
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, member, loading } = useAuth();
 
   const hasAuthToken =
     window.location.hash.includes("access_token") ||
@@ -32,6 +33,11 @@ export default function App() {
         <Route><Redirect to="/login" /></Route>
       </Switch>
     );
+  }
+
+  // User is logged in but not linked to a member yet
+  if (!member) {
+    return <SelectProfile />;
   }
 
   return (
