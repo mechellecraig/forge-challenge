@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Trophy, Users, Activity, User, ShieldAlert, LogOut } from "lucide-react";
+import { LayoutDashboard, Trophy, Users, Activity, User, ShieldAlert, LogOut, CircleUser } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 const NAV = [
@@ -44,9 +44,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-1 ml-1 pl-1 border-l border-white/10 shrink-0">
               {member && (
                 <Link href="/profile">
-                  <span className="text-xs text-white/40 hidden md:block hover:text-white cursor-pointer transition-colors">
-                    {member.name}
-                  </span>
+                  <button className={"flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors " + (location.startsWith("/profile") ? "bg-primary text-white" : "text-white/50 hover:text-white hover:bg-white/5")}>
+                    <CircleUser className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden md:inline">{member.name}</span>
+                  </button>
                 </Link>
               )}
               <button onClick={signOut} title="Sign out"
