@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+const fs = require('fs');
+
+fs.writeFileSync('src/pages/LogActivity.tsx', `import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTeams, getLogs, upsertLog } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
@@ -235,3 +237,6 @@ export default function LogActivity() {
     </div>
   );
 }
+`);
+
+console.log('LogActivity.tsx updated - now uses logged-in member automatically');
