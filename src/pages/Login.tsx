@@ -41,7 +41,7 @@ export default function Login() {
           <img src="/logo.png" alt="Ironworks" className="h-20 w-20 object-contain border-2 border-[#FF5500] rounded-xl" />
           <div className="text-center">
             <h1 className="font-display text-3xl font-bold uppercase tracking-wider text-white">Ironworks Fitness</h1>
-            <p className="text-white/40 text-sm mt-1 uppercase tracking-widest">Forge Challenge</p>
+            <p className="text-white/40 text-sm mt-1 uppercase tracking-widest">Intensity Challenge</p>
           </div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
