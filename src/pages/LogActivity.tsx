@@ -17,8 +17,7 @@ export default function LogActivity() {
     const d = new Date().getDay();
     return d === 0 ? 6 : d - 1;
   });
-  const [walk, setWalk] = useState("");
-  const [run, setRun] = useState("");
+  const [walkRun, setWalkRun] = useState("");
   const [bike, setBike] = useState("");
   const [mealPlan, setMealPlan] = useState(false);
   const [avgHr, setAvgHr] = useState("");
@@ -49,13 +48,13 @@ export default function LogActivity() {
         member_id: member.id,
         week,
         day_index: dayIndex,
-        walk: parseFloat(walk) || 0,
-        run: parseFloat(run) || 0,
+        walk: parseFloat(walkRun) || 0,
+        run: 0,
         bike: parseFloat(bike) || 0,
         meal_plan: mealPlan,
         avg_hr: parseFloat(avgHr) || 0,
       });
-      setWalk(""); setRun(""); setBike(""); setMealPlan(false); setAvgHr("");
+      setWalkRun(""); setBike(""); setMealPlan(false); setAvgHr("");
       qc.invalidateQueries({ queryKey: ["logs"] });
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
@@ -76,8 +75,8 @@ export default function LogActivity() {
   }
 
   const previewPts = member ? Math.round(calcDayPoints({
-    walk: parseFloat(walk) || 0,
-    run: parseFloat(run) || 0,
+    walk: parseFloat(walkRun) || 0,
+    run: 0,
     bike: parseFloat(bike) || 0,
     meal_plan: mealPlan,
     avg_hr: parseFloat(avgHr) || 0,
@@ -186,10 +185,9 @@ export default function LogActivity() {
 
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 border-b border-white/10 pb-2 mb-4">Activity Miles</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {([
-              ["Walk", "3 pts/mi", walk, setWalk],
-              ["Run", "3 pts/mi", run, setRun],
+              ["Walk / Run", "3 pts/mi", walkRun, setWalkRun],
               ["Bike", "1 pt/mi", bike, setBike],
             ] as [string, string, string, (v: string) => void][]).map(([name, hint, val, setter]) => (
               <div key={name}>
