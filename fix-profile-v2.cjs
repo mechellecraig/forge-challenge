@@ -1,4 +1,6 @@
-import { useState } from "react";
+const fs = require('fs');
+
+fs.writeFileSync('src/pages/Profile.tsx', `import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { User, Key, LogOut, Mail, Calendar } from "lucide-react";
@@ -169,3 +171,6 @@ export default function Profile() {
     </div>
   );
 }
+`);
+
+console.log('Profile.tsx updated with email, age display and age update');
