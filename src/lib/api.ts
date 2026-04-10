@@ -2,7 +2,7 @@ import { supabase } from "./supabase";
 import { calcDayPoints } from "./points";
 
 export type Team = { id: string; name: string };
-export type Member = { id: string; team_id: string; name: string; age: number };
+export type Member = { id: string; team_id: string; name: string; age: number; user_id: string | null };
 export type Log = {
   id?: string; member_id: string; week: number; day_index: number;
   walk: number; run: number; bike: number; meal_plan: boolean; avg_hr: number;
