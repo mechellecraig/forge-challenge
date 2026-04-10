@@ -11,7 +11,7 @@ const NAV = [
   { href: "/admin", label: "Admin", icon: ShieldAlert },
 ];
 
-export function Layout({ children }) {
+export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { member, signOut } = useAuth();
 
