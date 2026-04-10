@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTeams, getLogs, upsertLog } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
 import { useAuth } from "@/lib/auth";
-import { Activity, Footprints, Bike, PersonStanding, HeartPulse, Info } from "lucide-react";
+import { Activity, Footprints, Bike, UtensilsCrossed, HeartPulse, Info } from "lucide-react";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -152,15 +152,15 @@ export default function LogActivity() {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-white/50">
           {([
-            [Footprints, "Walk", "1 pt/mi"],
-            [PersonStanding, "Run", "2 pts/mi"],
-            [Bike, "Bike", "1.5 pts/mi"],
-            [Activity, "Meal Plan", "3 pts M-F / 5 pts Sat-Sun"],
-            [HeartPulse, "HR Zone", "+5 pts"],
-          ] as const).map(([Icon, label, hint]) => (
+            [Footprints, "Walk / Run", "3 pts per mile", "text-blue-400"],
+            [Bike, "Bike", "1 pt per mile", "text-yellow-400"],
+            [UtensilsCrossed, "Meal Plan (Mon–Fri)", "3 pts per day", "text-orange-400"],
+            [UtensilsCrossed, "Meal Plan (Sat–Sun)", "5 pts per day", "text-orange-400"],
+            [HeartPulse, "HR Zone Session", "+5 pts (≥75% max HR)", "text-red-400"],
+          ] as [any, string, string, string][]).map(([Icon, label, hint, color]) => (
             <div key={label} className="flex items-center gap-2">
-              <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span><span className="text-white font-semibold">{label}</span> -- {hint}</span>
+              <Icon className={`w-3.5 h-3.5 shrink-0 ${color}`} />
+              <span><span className="text-white font-semibold">{label}</span> — {hint}</span>
             </div>
           ))}
         </div>
