@@ -9,6 +9,7 @@ import MyStats from "@/pages/MyStats";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import SelectProfile from "@/pages/SelectProfile";
+import Profile from "@/pages/Profile";
 
 export default function App() {
   const { user, member, loading } = useAuth();
@@ -35,7 +36,6 @@ export default function App() {
     );
   }
 
-  // User is logged in but not linked to a member yet
   if (!member) {
     return <SelectProfile />;
   }
@@ -49,6 +49,7 @@ export default function App() {
         <Route path="/log" component={LogActivity} />
         <Route path="/me" component={MyStats} />
         <Route path="/admin" component={Admin} />
+        <Route path="/profile" component={Profile} />
       </Switch>
     </Layout>
   );
