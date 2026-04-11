@@ -93,6 +93,17 @@ export async function createBonus(b: { team_id: string; week: number; points: nu
   return data;
 }
 
+export async function updateBonus(id: string, updates: { team_id?: string; week?: number; points?: number; description?: string }): Promise<Bonus> {
+  const { data, error } = await supabase.from("bonuses").update(updates).eq("id", id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteBonus(id: string): Promise<void> {
+  const { error } = await supabase.from("bonuses").delete().eq("id", id);
+  if (error) throw error;
+}
+
 // ── Admin PIN ─────────────────────────────────────────────────────────────────
 export async function verifyPin(pin: string): Promise<boolean> {
   const { data, error } = await supabase.from("config").select("value").eq("key", "adminPin").single();

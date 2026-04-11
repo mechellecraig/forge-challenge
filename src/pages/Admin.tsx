@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, createTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, verifyPin, changePin, getLogs } from "@/lib/api";
+import { getTeams, createTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
-import { ShieldAlert, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { ShieldAlert, Trash2, ChevronDown, ChevronUp, Pencil, X, Check } from "lucide-react";
 import Dashboard from "@/pages/Dashboard";
 
 type Tab = "dashboard" | "teams" | "members" | "bonuses" | "activity" | "pin";
@@ -334,11 +334,26 @@ function ManageBonuses() {
   const qc = useQueryClient();
   const { data: teams } = useQuery({ queryKey: ["teams"], queryFn: getTeams });
   const { data: bonuses, isLoading } = useQuery({ queryKey: ["bonuses"], queryFn: getBonuses });
+
+  // Add form state
   const [teamId, setTeamId] = useState("");
   const [week, setWeek] = useState("1");
   const [points, setPoints] = useState("50");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTeamId, setEditTeamId] = useState("");
+  const [editWeek, setEditWeek] = useState("");
+  const [editPoints, setEditPoints] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["bonuses"] });
+    qc.invalidateQueries({ queryKey: ["leaderboard"] });
+  };
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -347,18 +362,47 @@ function ManageBonuses() {
     try {
       await createBonus({ team_id: teamId, week: parseInt(week), points: parseInt(points), description });
       setTeamId(""); setDescription("");
-      qc.invalidateQueries({ queryKey: ["bonuses"] });
-      qc.invalidateQueries({ queryKey: ["leaderboard"] });
-    }
-    finally { setSaving(false); }
+      invalidate();
+    } finally { setSaving(false); }
+  }
+
+  function startEdit(b: { id: string; team_id: string; week: number; points: number; description: string }) {
+    setEditingId(b.id);
+    setEditTeamId(b.team_id);
+    setEditWeek(String(b.week));
+    setEditPoints(String(b.points));
+    setEditDescription(b.description ?? "");
+  }
+
+  async function handleSaveEdit() {
+    if (!editingId) return;
+    setEditSaving(true);
+    try {
+      await updateBonus(editingId, {
+        team_id: editTeamId,
+        week: parseInt(editWeek),
+        points: parseInt(editPoints),
+        description: editDescription,
+      });
+      setEditingId(null);
+      invalidate();
+    } finally { setEditSaving(false); }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this bonus?")) return;
+    await deleteBonus(id);
+    invalidate();
   }
 
   const getTeamName = (tid: string) => teams?.find(t => t.id === tid)?.name || "Unknown";
   const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary";
+  const inpSm = "bg-black/40 border border-white/10 text-white rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-primary";
   const lbl = "block text-xs uppercase tracking-wider text-white/40 font-bold mb-1.5";
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
+      {/* Add bonus form */}
       <div className="bg-white/5 border border-primary/20 rounded-xl p-6">
         <h2 className="font-display font-bold uppercase tracking-wider text-primary mb-1">Award Bonus</h2>
         <p className="text-white/30 text-xs mb-4">Grant extra points for challenges, spirit, or attendance.</p>
@@ -384,21 +428,78 @@ function ManageBonuses() {
           </button>
         </form>
       </div>
+
+      {/* Bonus history with edit/delete */}
       <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-        <h2 className="font-display font-bold uppercase tracking-wider text-white mb-4">Bonus History</h2>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <h2 className="font-display font-bold uppercase tracking-wider text-white mb-4">
+          Bonus History <span className="text-white/30 font-normal text-sm ml-1">{bonuses?.length || 0} total</span>
+        </h2>
+        <div className="space-y-2 max-h-[480px] overflow-y-auto">
           {isLoading && <p className="text-white/30 text-sm">Loading...</p>}
-          {bonuses?.map((b, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/5">
-              <div>
-                <div className="font-semibold text-white">{getTeamName(b.team_id)}</div>
-                {b.description && <div className="text-xs text-white/60 mt-0.5">{b.description}</div>}
-                <div className="text-xs text-white/30 uppercase tracking-wider mt-0.5">Week {b.week}</div>
-              </div>
-              <div className="font-mono text-lg text-green-400 font-bold">+{b.points}</div>
+
+          {bonuses?.map(b => (
+            <div key={b.id} className="rounded-lg bg-white/[0.03] border border-white/5 overflow-hidden">
+              {editingId === b.id ? (
+                /* ── Inline edit form ── */
+                <div className="p-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Team</p>
+                      <select value={editTeamId} onChange={e => setEditTeamId(e.target.value)} className={`${inpSm} w-full`}>
+                        {teams?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Week</p>
+                      <input type="number" min="1" max="12" value={editWeek} onChange={e => setEditWeek(e.target.value)} className={`${inpSm} w-full`} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Description</p>
+                    <input type="text" value={editDescription} onChange={e => setEditDescription(e.target.value)} className={`${inpSm} w-full`} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Points</p>
+                    <input type="number" value={editPoints} onChange={e => setEditPoints(e.target.value)} className={`${inpSm} w-full text-primary font-mono font-bold`} />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={handleSaveEdit} disabled={editSaving}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold uppercase disabled:opacity-50">
+                      <Check className="w-3.5 h-3.5" />{editSaving ? "Saving..." : "Save"}
+                    </button>
+                    <button onClick={() => setEditingId(null)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-white/10 text-white/40 text-xs font-bold uppercase hover:text-white transition-colors">
+                      <X className="w-3.5 h-3.5" />Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ── Read-only row ── */
+                <div className="flex items-center justify-between px-3 py-3 gap-3">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-white truncate">{getTeamName(b.team_id)}</div>
+                    {b.description && <div className="text-xs text-white/60 mt-0.5 truncate">{b.description}</div>}
+                    <div className="text-xs text-white/30 uppercase tracking-wider mt-0.5">Week {b.week}</div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-mono text-lg text-green-400 font-bold">+{b.points}</span>
+                    <button onClick={() => startEdit(b)}
+                      className="p-1.5 rounded hover:bg-white/10 text-white/30 hover:text-white transition-colors" title="Edit">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(b.id)}
+                      className="p-1.5 rounded hover:bg-red-400/10 text-red-400/50 hover:text-red-400 transition-colors" title="Delete">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
-          {bonuses?.length === 0 && !isLoading && <p className="text-white/30 text-sm text-center py-4">No bonuses awarded yet.</p>}
+
+          {bonuses?.length === 0 && !isLoading && (
+            <p className="text-white/30 text-sm text-center py-4">No bonuses awarded yet.</p>
+          )}
         </div>
       </div>
     </div>
