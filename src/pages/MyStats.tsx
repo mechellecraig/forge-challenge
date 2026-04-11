@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getTeams, getLogs } from "@/lib/api";
-import { calcDayPoints } from "@/lib/points";
+import { calcDayPoints, POINTS } from "@/lib/points";
 import { useAuth } from "@/lib/auth";
-import { Footprints, PersonStanding, Bike, Activity, HeartPulse, Trophy, Calendar, Flame, User } from "lucide-react";
+import { Footprints, Bike, Activity, HeartPulse, Trophy, Calendar, Flame, User } from "lucide-react";
 
 export default function MyStats() {
   const { member } = useAuth();
@@ -36,6 +36,9 @@ export default function MyStats() {
     const totalBike = Math.round(enriched.reduce((s, l) => s + l.bike, 0) * 10) / 10;
     const totalMiles = Math.round((totalWalk + totalRun + totalBike) * 10) / 10;
     const mealPlanDays = enriched.filter(l => l.meal_plan).length;
+    const mealPlanPoints = enriched
+      .filter(l => l.meal_plan)
+      .reduce((s, l) => s + (l.day_index >= 5 ? POINTS.meal_weekend : POINTS.meal_weekday), 0);
     const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * 0.75).length;
 
     const weeks = [...new Set(enriched.map(l => l.week))].sort((a, b) => a - b);
@@ -52,7 +55,7 @@ export default function MyStats() {
 
     return {
       totalPoints, totalMiles, totalWalk, totalRun, totalBike,
-      daysLogged: enriched.length, mealPlanDays, hrBonusDays, byWeek,
+      daysLogged: enriched.length, mealPlanDays, mealPlanPoints, hrBonusDays, byWeek,
       maxWeekPoints: Math.max(...byWeek.map(w => w.points), 1),
     };
   }, [logs, member]);
@@ -116,12 +119,23 @@ export default function MyStats() {
 
           <div>
             <h2 className="text-xl font-display font-bold uppercase tracking-tight text-white mb-3">Activity Breakdown</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { label: "Walk", miles: stats.totalWalk, pts: Math.round(stats.totalWalk * 1 * 10) / 10, icon: Footprints },
-                { label: "Run", miles: stats.totalRun, pts: Math.round(stats.totalRun * 2 * 10) / 10, icon: PersonStanding },
-                { label: "Bike", miles: stats.totalBike, pts: Math.round(stats.totalBike * 1.5 * 10) / 10, icon: Bike },
-              ].map(({ label, miles, pts, icon: Icon }) => (
+                {
+                  label: "Walk / Run",
+                  miles: Math.round((stats.totalWalk + stats.totalRun) * 10) / 10,
+                  pts: Math.round((stats.totalWalk + stats.totalRun) * POINTS.walk * 10) / 10,
+                  icon: Footprints,
+                  rate: `${POINTS.walk} pts/mi`,
+                },
+                {
+                  label: "Bike",
+                  miles: stats.totalBike,
+                  pts: Math.round(stats.totalBike * POINTS.bike * 10) / 10,
+                  icon: Bike,
+                  rate: `${POINTS.bike} pt/mi`,
+                },
+              ].map(({ label, miles, pts, icon: Icon, rate }) => (
                 <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5 text-primary" />
@@ -129,7 +143,7 @@ export default function MyStats() {
                   <div>
                     <p className="text-sm text-white/40 uppercase tracking-wider">{label}</p>
                     <p className="text-2xl font-bold text-white">{miles} <span className="text-sm font-normal text-white/40">mi</span></p>
-                    <p className="text-xs text-primary">{pts} pts</p>
+                    <p className="text-xs text-primary font-bold">{pts} pts <span className="text-white/30 font-normal">({rate})</span></p>
                   </div>
                 </div>
               ))}
@@ -141,14 +155,14 @@ export default function MyStats() {
               <HeartPulse className="w-4 h-4 text-primary" />
               <span className="text-sm text-white/40">HR Zone Days:</span>
               <span className="text-white font-bold">{stats.hrBonusDays}</span>
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">+{stats.hrBonusDays * 5} pts</span>
+              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">+{stats.hrBonusDays * POINTS.hr_zone} pts</span>
             </div>
             <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
               <Activity className="w-4 h-4 text-primary" />
-              <span className="text-sm text-white/40">Meal Plan Adherence:</span>
-              <span className="text-white font-bold">
-                {stats.daysLogged > 0 ? Math.round((stats.mealPlanDays / stats.daysLogged) * 100) : 0}%
-              </span>
+              <span className="text-sm text-white/40">Meal Plan:</span>
+              <span className="text-white font-bold">{stats.mealPlanDays} days</span>
+              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">+{stats.mealPlanPoints} pts</span>
+              <span className="text-xs text-white/30">({POINTS.meal_weekday} weekday / {POINTS.meal_weekend} weekend)</span>
             </div>
           </div>
 
