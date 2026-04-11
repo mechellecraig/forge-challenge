@@ -41,7 +41,7 @@ export default function Login() {
           <img src="/logo.png" alt="Ironworks" className="h-20 w-20 object-contain border-2 border-[#FF5500] rounded-xl" />
           <div className="text-center">
             <a href="https://www.ironworksfitnessnc.com" target="_blank" rel="noopener noreferrer"
-              className="font-display text-3xl font-bold uppercase tracking-wider text-white hover:text-primary transition-colors">
+              className="font-display text-3xl font-bold uppercase tracking-wider text-primary">
               Ironworks Fitness
             </a>
             <p className="text-white/40 text-sm mt-1 uppercase tracking-widest">Intensity Challenge</p>
