@@ -148,14 +148,10 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
     memberActivity.set(log.member_id, (memberActivity.get(log.member_id) || 0) + pts);
   });
 
-  // Team activity = average of all member points
+  // Team activity = sum of all member points
   const teamActivity = new Map<string, number>();
   members.forEach(m => {
     teamActivity.set(m.team_id, (teamActivity.get(m.team_id) || 0) + (memberActivity.get(m.id) || 0));
-  });
-  new Set(members.map(m => m.team_id)).forEach(teamId => {
-    const count = memberCount.get(teamId) || 1;
-    teamActivity.set(teamId, (teamActivity.get(teamId) || 0) / count);
   });
 
   // Bonus points per team (filtered by week if provided)
