@@ -40,7 +40,7 @@ export default function Login() {
         <div className="flex flex-col items-center gap-3">
           <img src="/logo.png" alt="Ironworks" className="h-20 w-20 object-contain border-2 border-[#FF5500] rounded-xl" />
           <div className="text-center">
-            <a href="https://www.ironworksfitness.com" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.ironworksfitnessnc.com" target="_blank" rel="noopener noreferrer"
               className="font-display text-3xl font-bold uppercase tracking-wider text-white hover:text-primary transition-colors">
               Ironworks Fitness
             </a>
