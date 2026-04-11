@@ -5,7 +5,7 @@ const POINTS = [
   { icon: Bike, label: "Bike", detail: "1 pt per mile", color: "text-yellow-400" },
   { icon: UtensilsCrossed, label: "Meal Plan (Mon–Fri)", detail: "3 pts per day", color: "text-orange-400" },
   { icon: UtensilsCrossed, label: "Meal Plan (Sat–Sun)", detail: "5 pts per day", color: "text-orange-400" },
-  { icon: HeartPulse, label: "HR Zone Session", detail: "+5 pts (≥75% max HR)", color: "text-red-400" },
+  { icon: HeartPulse, label: "HR Zone Session", detail: "+5 pts (≥75% max HR, >30 min)", color: "text-red-400" },
   { icon: Star, label: "Challenge Bonus", detail: "Monthly sports & weekly challenge pts", color: "text-primary" },
 ];
 
