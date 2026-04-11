@@ -124,7 +124,7 @@ export default function Overview() {
           {[
             "Log your activity every day — consistency compounds over 12 weeks.",
             "The meal plan bonus applies per day, not per week. Weekends are worth more, so don't skip Saturday and Sunday.",
-            "Track your heart rate during workouts — even one HR zone session a day adds +5 pts.",
+            "Track your heart rate during workouts — a HR zone session (≥75% max HR for >30 min) adds +5 pts per day.",
             "Check the Leaderboard often to stay motivated and push your team forward.",
             "If you forget to log a day, you can go back and add it — past days are always editable.",
           ].map(tip => (

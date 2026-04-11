@@ -155,7 +155,7 @@ export default function LogActivity() {
             [Bike, "Bike", "1 pt per mile", "text-yellow-400"],
             [UtensilsCrossed, "Meal Plan (Mon–Fri)", "3 pts per day", "text-orange-400"],
             [UtensilsCrossed, "Meal Plan (Sat–Sun)", "5 pts per day", "text-orange-400"],
-            [HeartPulse, "HR Zone Session", "+5 pts (≥75% max HR)", "text-red-400"],
+            [HeartPulse, "HR Zone Session", "+5 pts (≥75% max HR, >30 min)", "text-red-400"],
           ] as [any, string, string, string][]).map(([Icon, label, hint, color]) => (
             <div key={label} className="flex items-center gap-2 whitespace-nowrap">
               <Icon className={`w-3.5 h-3.5 shrink-0 ${color}`} />
