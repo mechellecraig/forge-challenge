@@ -113,7 +113,7 @@ export default function Profile() {
           <p className="text-sm font-bold text-white uppercase tracking-wider">Update Age</p>
         </div>
         <p className="text-xs text-white/40">
-          Your age is used to calculate your heart rate zone target (75% of 220 minus age). Sustain that zone for >30 min to earn +5 pts. Keep your age accurate for correct points.
+          Your age is used to calculate your heart rate zone target (75% of 220 minus age). Sustain that zone for &gt;30 min to earn +5 pts. Keep your age accurate for correct points.
         </p>
         <form onSubmit={handleUpdateAge} className="flex gap-3">
           <input type="number" min="10" max="100" value={age} onChange={e => setAge(e.target.value)}
