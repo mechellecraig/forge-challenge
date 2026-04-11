@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Link href="/">
               <img src="/logo.png" alt="Ironworks" className="h-10 w-10 object-contain border-2 border-[#FF5500] rounded-md" />
             </Link>
-            <a href="https://www.ironworksfitnessnc.com" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.ironworksfitnessl.nc" target="_blank" rel="noopener noreferrer"
               className="font-display text-primary text-xl tracking-wider uppercase hidden sm:block">
               Ironworks Fitness
             </a>
