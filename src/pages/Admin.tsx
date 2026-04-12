@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, createTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs } from "@/lib/api";
+import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
 import { ShieldAlert, Trash2, ChevronDown, ChevronUp, Pencil, X, Check } from "lucide-react";
 import Dashboard from "@/pages/Dashboard";
@@ -210,12 +210,32 @@ function ManageTeams() {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
     try { await createTeam(name.trim()); setName(""); qc.invalidateQueries({ queryKey: ["teams"] }); }
     finally { setSaving(false); }
+  }
+
+  function startEdit(t: { id: string; name: string }) {
+    setEditingId(t.id);
+    setEditName(t.name);
+  }
+
+  async function handleSaveEdit() {
+    if (!editingId || !editName.trim()) return;
+    setEditSaving(true);
+    try {
+      await updateTeam(editingId, editName.trim());
+      setEditingId(null);
+      qc.invalidateQueries({ queryKey: ["teams"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
+    } finally { setEditSaving(false); }
   }
 
   async function handleDelete(id: string) {
@@ -245,11 +265,38 @@ function ManageTeams() {
         <div className="space-y-2">
           {isLoading && <p className="text-white/30 text-sm">Loading...</p>}
           {teams?.map(t => (
-            <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/5">
-              <span className="font-semibold text-white">{t.name}</span>
-              <button onClick={() => handleDelete(t.id)} className="text-red-400/60 hover:text-red-400 p-1.5 rounded hover:bg-red-400/10 transition-colors">
-                <Trash2 className="w-4 h-4" />
-              </button>
+            <div key={t.id} className="rounded-lg bg-white/[0.03] border border-white/5 overflow-hidden">
+              {editingId === t.id ? (
+                <div className="flex items-center gap-2 p-2">
+                  <input
+                    autoFocus
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                    className="flex-1 bg-black/40 border border-primary/50 text-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
+                  />
+                  <button onClick={handleSaveEdit} disabled={editSaving}
+                    className="p-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50">
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setEditingId(null)}
+                    className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3">
+                  <span className="font-semibold text-white">{t.name}</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => startEdit(t)} className="text-white/30 hover:text-white p-1.5 rounded hover:bg-white/10 transition-colors">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(t.id)} className="text-red-400/60 hover:text-red-400 p-1.5 rounded hover:bg-red-400/10 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           {teams?.length === 0 && !isLoading && <p className="text-white/30 text-sm text-center py-4">No teams yet.</p>}

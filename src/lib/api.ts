@@ -30,6 +30,12 @@ export async function createTeam(name: string): Promise<Team> {
   return data;
 }
 
+export async function updateTeam(id: string, name: string): Promise<Team> {
+  const { data, error } = await supabase.from("teams").update({ name }).eq("id", id).select().single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteTeam(id: string): Promise<void> {
   const { error } = await supabase.from("teams").delete().eq("id", id);
   if (error) throw error;
