@@ -1,13 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { getHrThreshold } from "@/lib/api";
 import { Info, Footprints, Bike, UtensilsCrossed, HeartPulse, Star, Trophy, Activity, BarChart3 } from "lucide-react";
-
-const POINTS = [
-  { icon: Footprints, label: "Walk / Run", detail: "3 pts per mile", color: "text-blue-400" },
-  { icon: Bike, label: "Bike", detail: "1 pt per mile", color: "text-yellow-400" },
-  { icon: UtensilsCrossed, label: "Meal Plan (Mon–Fri)", detail: "3 pts per day", color: "text-orange-400" },
-  { icon: UtensilsCrossed, label: "Meal Plan (Sat–Sun)", detail: "5 pts per day", color: "text-orange-400" },
-  { icon: HeartPulse, label: "HR Zone Session", detail: "+5 pts (≥75% max HR, >30 min)", color: "text-red-400" },
-  { icon: Star, label: "Challenge Bonus", detail: "Monthly sports & weekly challenge pts", color: "text-primary" },
-];
 
 const HOW_TO = [
   {
@@ -28,6 +21,17 @@ const HOW_TO = [
 ];
 
 export default function Overview() {
+  const { data: hrThreshold = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
+
+  const POINTS = [
+    { icon: Footprints, label: "Walk / Run", detail: "3 pts per mile", color: "text-blue-400" },
+    { icon: Bike, label: "Bike", detail: "1 pt per mile", color: "text-yellow-400" },
+    { icon: UtensilsCrossed, label: "Meal Plan (Mon–Fri)", detail: "3 pts per day", color: "text-orange-400" },
+    { icon: UtensilsCrossed, label: "Meal Plan (Sat–Sun)", detail: "5 pts per day", color: "text-orange-400" },
+    { icon: HeartPulse, label: "HR Zone Session", detail: `+5 pts (≥${Math.round(hrThreshold * 100)}% max HR, >30 min)`, color: "text-red-400" },
+    { icon: Star, label: "Challenge Bonus", detail: "Monthly sports & weekly challenge pts", color: "text-primary" },
+  ];
+
   return (
     <div className="space-y-10 pb-16 max-w-4xl">
       {/* Header */}
@@ -124,7 +128,7 @@ export default function Overview() {
           {[
             "Log your activity every day — consistency compounds over 12 weeks.",
             "The meal plan bonus applies per day, not per week. Weekends are worth more, so don't skip Saturday and Sunday.",
-            "Track your heart rate during workouts — a HR zone session (≥75% max HR for >30 min) adds +5 pts per day.",
+            `Track your heart rate during workouts — a HR zone session (≥${Math.round(hrThreshold * 100)}% max HR for >30 min) adds +5 pts per day.`,
             "Check the Leaderboard often to stay motivated and push your team forward.",
             "If you forget to log a day, you can go back and add it — past days are always editable.",
           ].map(tip => (

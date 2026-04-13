@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs } from "@/lib/api";
+import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs, getHrThreshold, setHrThreshold } from "@/lib/api";
 import { calcDayPoints } from "@/lib/points";
 import { ShieldAlert, Trash2, ChevronDown, ChevronUp, Pencil, X, Check } from "lucide-react";
 import Dashboard from "@/pages/Dashboard";
@@ -80,7 +80,12 @@ export default function Admin() {
       {tab === "members" && <ManageMembers />}
       {tab === "activity" && <MemberActivity />}
       {tab === "bonuses" && <ManageBonuses />}
-      {tab === "pin" && <ChangePin />}
+      {tab === "pin" && (
+        <div className="space-y-8">
+          <ChangePin />
+          <HrThresholdSetting />
+        </div>
+      )}
     </div>
   );
 }
@@ -89,6 +94,7 @@ function MemberActivity() {
   const { data: members, isLoading: loadingMembers } = useQuery({ queryKey: ["members"], queryFn: getMembers });
   const { data: teams } = useQuery({ queryKey: ["teams"], queryFn: getTeams });
   const { data: logs, isLoading: loadingLogs } = useQuery({ queryKey: ["logs", "all"], queryFn: () => getLogs() });
+  const { data: hrThreshold = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const isLoading = loadingMembers || loadingLogs;
@@ -104,7 +110,7 @@ function MemberActivity() {
       walk: log.walk, run: log.run, bike: log.bike,
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
-    }), 0);
+    }, hrThreshold), 0);
   };
 
   const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -173,7 +179,7 @@ function MemberActivity() {
                             walk: log.walk, run: log.run, bike: log.bike,
                             meal_plan: log.meal_plan, avg_hr: log.avg_hr,
                             day_index: log.day_index, age: member.age,
-                          }) * 10) / 10;
+                          }, hrThreshold) * 10) / 10;
                           return (
                             <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02]">
                               <td className="px-4 py-2.5 text-white/60">{log.week}</td>
@@ -548,6 +554,64 @@ function ManageBonuses() {
             <p className="text-white/30 text-sm text-center py-4">No bonuses awarded yet.</p>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function HrThresholdSetting() {
+  const qc = useQueryClient();
+  const { data: current = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
+  const [value, setValue] = useState("");
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const displayPct = Math.round(current * 100);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const pct = parseFloat(value);
+    if (!value || isNaN(pct) || pct < 50 || pct > 100) {
+      setMsg({ text: "Enter a percentage between 50 and 100.", ok: false });
+      return;
+    }
+    setSaving(true);
+    try {
+      await setHrThreshold(pct / 100);
+      qc.invalidateQueries({ queryKey: ["hrThreshold"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
+      qc.invalidateQueries({ queryKey: ["summary"] });
+      setMsg({ text: `HR threshold updated to ${pct}%.`, ok: true });
+      setValue("");
+    } catch (err: any) {
+      setMsg({ text: err.message || "Failed to update threshold.", ok: false });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary";
+  const lbl = "block text-xs uppercase tracking-wider text-white/40 font-bold mb-1.5";
+
+  return (
+    <div className="max-w-sm">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+        <h2 className="font-display font-bold uppercase tracking-wider text-white mb-1">HR Zone Threshold</h2>
+        <p className="text-white/30 text-xs mb-1">Current: <span className="text-primary font-bold">{displayPct}% of max HR</span></p>
+        <p className="text-white/30 text-xs mb-5">Members must sustain this percentage of their max heart rate for &gt;30 min to earn the +5 HR zone bonus.</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className={lbl}>New Threshold (%)</label>
+            <input type="number" min="50" max="100" step="1" value={value}
+              onChange={e => setValue(e.target.value)}
+              placeholder={`e.g. ${displayPct}`}
+              className={inp} />
+          </div>
+          {msg && <p className={`text-sm font-semibold ${msg.ok ? "text-green-400" : "text-red-400"}`}>{msg.text}</p>}
+          <button type="submit" disabled={saving} className="w-full py-2.5 rounded-lg bg-primary text-white font-bold uppercase text-sm disabled:opacity-50">
+            {saving ? "Updating..." : "Update Threshold"}
+          </button>
+        </form>
       </div>
     </div>
   );

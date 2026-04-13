@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getTeams, getLogs } from "@/lib/api";
+import { getTeams, getLogs, getHrThreshold } from "@/lib/api";
 import { calcDayPoints, POINTS } from "@/lib/points";
 import { useAuth } from "@/lib/auth";
 import { Footprints, Bike, Activity, HeartPulse, Trophy, Calendar, Flame, User } from "lucide-react";
@@ -17,6 +17,8 @@ export default function MyStats() {
     enabled: !!member,
   });
 
+  const { data: hrThreshold = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
+
   const stats = useMemo(() => {
     if (!logs || !member) return null;
     const age = member.age ?? 0;
@@ -27,7 +29,7 @@ export default function MyStats() {
         walk: l.walk, run: l.run, bike: l.bike,
         meal_plan: l.meal_plan, avg_hr: l.avg_hr,
         day_index: l.day_index, age,
-      }),
+      }, hrThreshold),
     }));
 
     const totalPoints = Math.round(enriched.reduce((s, l) => s + l.points, 0) * 10) / 10;
@@ -39,7 +41,7 @@ export default function MyStats() {
     const mealPlanPoints = enriched
       .filter(l => l.meal_plan)
       .reduce((s, l) => s + (l.day_index >= 5 ? POINTS.meal_weekend : POINTS.meal_weekday), 0);
-    const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * 0.75).length;
+    const hrBonusDays = enriched.filter(l => l.avg_hr > 0 && age > 0 && l.avg_hr >= (220 - age) * hrThreshold).length;
 
     const weeks = [...new Set(enriched.map(l => l.week))].sort((a, b) => a - b);
     const byWeek = weeks.map(w => {
@@ -58,7 +60,7 @@ export default function MyStats() {
       daysLogged: enriched.length, mealPlanDays, mealPlanPoints, hrBonusDays, byWeek,
       maxWeekPoints: Math.max(...byWeek.map(w => w.points), 1),
     };
-  }, [logs, member]);
+  }, [logs, member, hrThreshold]);
 
   if (!member) {
     return (

@@ -110,6 +110,19 @@ export async function deleteBonus(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// ── Config ────────────────────────────────────────────────────────────────────
+export async function getHrThreshold(): Promise<number> {
+  const { data } = await supabase.from("config").select("value").eq("key", "hrThreshold").maybeSingle();
+  return data ? parseFloat(data.value) : 0.75;
+}
+
+export async function setHrThreshold(threshold: number): Promise<void> {
+  const { error } = await supabase
+    .from("config")
+    .upsert({ key: "hrThreshold", value: String(threshold) }, { onConflict: "key" });
+  if (error) throw error;
+}
+
 // ── Admin PIN ─────────────────────────────────────────────────────────────────
 export async function verifyPin(pin: string): Promise<boolean> {
   const { data, error } = await supabase.from("config").select("value").eq("key", "adminPin").single();
@@ -126,11 +139,12 @@ export async function changePin(currentPin: string, newPin: string): Promise<voi
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 export async function getLeaderboard(week?: number): Promise<{ entries: LeaderboardEntry[] }> {
-  const [teams, members, allLogs, allBonuses] = await Promise.all([
+  const [teams, members, allLogs, allBonuses, hrThreshold] = await Promise.all([
     getTeams(),
     getMembers(),
     week ? getLogs({ week }) : getLogs(),
     getBonuses(),
+    getHrThreshold(),
   ]);
 
   const memberMap = new Map(members.map(m => [m.id, m]));
@@ -150,7 +164,7 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
       walk: log.walk, run: log.run, bike: log.bike,
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
-    });
+    }, hrThreshold);
     memberActivity.set(log.member_id, (memberActivity.get(log.member_id) || 0) + pts);
   });
 
@@ -194,8 +208,8 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 export async function getSummary(): Promise<Summary> {
-  const [teams, members, allLogs, bonuses] = await Promise.all([
-    getTeams(), getMembers(), getLogs(), getBonuses(),
+  const [teams, members, allLogs, bonuses, hrThreshold] = await Promise.all([
+    getTeams(), getMembers(), getLogs(), getBonuses(), getHrThreshold(),
   ]);
 
   const currentWeek = allLogs.length > 0 ? Math.max(...allLogs.map(l => l.week)) : 1;
@@ -212,7 +226,7 @@ export async function getSummary(): Promise<Summary> {
       walk: log.walk, run: log.run, bike: log.bike,
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
-    });
+    }, hrThreshold);
     teamPts.set(member.team_id, (teamPts.get(member.team_id) || 0) + pts);
   });
   bonuses.filter(b => b.week === currentWeek).forEach(b => {
