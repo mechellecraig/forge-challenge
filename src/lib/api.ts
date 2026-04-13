@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
-import { calcDayPoints } from "./points";
+import { calcDayPoints, DEFAULT_SCORING, ScoringConfig } from "./points";
+export type { ScoringConfig };
 
 export type Team = { id: string; name: string };
 export type Member = { id: string; team_id: string; name: string; age: number; user_id: string | null; is_admin?: boolean };
@@ -110,16 +111,37 @@ export async function deleteBonus(id: string): Promise<void> {
   if (error) throw error;
 }
 
-// ── Config ────────────────────────────────────────────────────────────────────
-export async function getHrThreshold(): Promise<number> {
-  const { data } = await supabase.from("config").select("value").eq("key", "hrThreshold").maybeSingle();
-  return data ? parseFloat(data.value) : 0.75;
+// ── Scoring config ────────────────────────────────────────────────────────────
+const SCORING_KEYS = ["pts_walk_run", "pts_bike", "pts_meal_weekday", "pts_meal_weekend", "pts_hr_zone", "hrThreshold"];
+
+export async function getScoringConfig(): Promise<ScoringConfig> {
+  const { data } = await supabase.from("config").select("key, value").in("key", SCORING_KEYS);
+  const map: Record<string, string> = Object.fromEntries((data || []).map((r: any) => [r.key, r.value]));
+  const walkRun = parseFloat(map.pts_walk_run) || DEFAULT_SCORING.walk;
+  return {
+    walk: walkRun,
+    run: walkRun,
+    bike: parseFloat(map.pts_bike) || DEFAULT_SCORING.bike,
+    meal_weekday: parseFloat(map.pts_meal_weekday) || DEFAULT_SCORING.meal_weekday,
+    meal_weekend: parseFloat(map.pts_meal_weekend) || DEFAULT_SCORING.meal_weekend,
+    hr_zone: parseFloat(map.pts_hr_zone) || DEFAULT_SCORING.hr_zone,
+    hr_threshold: parseFloat(map.hrThreshold) || DEFAULT_SCORING.hr_threshold,
+  };
 }
 
-export async function setHrThreshold(threshold: number): Promise<void> {
-  const { error } = await supabase
-    .from("config")
-    .upsert({ key: "hrThreshold", value: String(threshold) }, { onConflict: "key" });
+export async function setScoringConfig(updates: {
+  walk_run?: number; bike?: number; meal_weekday?: number;
+  meal_weekend?: number; hr_zone?: number; hr_threshold?: number;
+}): Promise<void> {
+  const rows: { key: string; value: string }[] = [];
+  if (updates.walk_run !== undefined) rows.push({ key: "pts_walk_run", value: String(updates.walk_run) });
+  if (updates.bike !== undefined) rows.push({ key: "pts_bike", value: String(updates.bike) });
+  if (updates.meal_weekday !== undefined) rows.push({ key: "pts_meal_weekday", value: String(updates.meal_weekday) });
+  if (updates.meal_weekend !== undefined) rows.push({ key: "pts_meal_weekend", value: String(updates.meal_weekend) });
+  if (updates.hr_zone !== undefined) rows.push({ key: "pts_hr_zone", value: String(updates.hr_zone) });
+  if (updates.hr_threshold !== undefined) rows.push({ key: "hrThreshold", value: String(updates.hr_threshold) });
+  if (rows.length === 0) return;
+  const { error } = await supabase.from("config").upsert(rows, { onConflict: "key" });
   if (error) throw error;
 }
 
@@ -139,12 +161,12 @@ export async function changePin(currentPin: string, newPin: string): Promise<voi
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 export async function getLeaderboard(week?: number): Promise<{ entries: LeaderboardEntry[] }> {
-  const [teams, members, allLogs, allBonuses, hrThreshold] = await Promise.all([
+  const [teams, members, allLogs, allBonuses, scoring] = await Promise.all([
     getTeams(),
     getMembers(),
     week ? getLogs({ week }) : getLogs(),
     getBonuses(),
-    getHrThreshold(),
+    getScoringConfig(),
   ]);
 
   const memberMap = new Map(members.map(m => [m.id, m]));
@@ -164,7 +186,7 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
       walk: log.walk, run: log.run, bike: log.bike,
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
-    }, hrThreshold);
+    }, scoring);
     memberActivity.set(log.member_id, (memberActivity.get(log.member_id) || 0) + pts);
   });
 
@@ -208,8 +230,8 @@ export async function getLeaderboard(week?: number): Promise<{ entries: Leaderbo
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 export async function getSummary(): Promise<Summary> {
-  const [teams, members, allLogs, bonuses, hrThreshold] = await Promise.all([
-    getTeams(), getMembers(), getLogs(), getBonuses(), getHrThreshold(),
+  const [teams, members, allLogs, bonuses, scoring] = await Promise.all([
+    getTeams(), getMembers(), getLogs(), getBonuses(), getScoringConfig(),
   ]);
 
   const currentWeek = allLogs.length > 0 ? Math.max(...allLogs.map(l => l.week)) : 1;
@@ -226,7 +248,7 @@ export async function getSummary(): Promise<Summary> {
       walk: log.walk, run: log.run, bike: log.bike,
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
-    }, hrThreshold);
+    }, scoring);
     teamPts.set(member.team_id, (teamPts.get(member.team_id) || 0) + pts);
   });
   bonuses.filter(b => b.week === currentWeek).forEach(b => {

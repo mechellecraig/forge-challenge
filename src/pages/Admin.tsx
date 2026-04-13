@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs, getHrThreshold, setHrThreshold } from "@/lib/api";
-import { calcDayPoints } from "@/lib/points";
+import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs, getScoringConfig, setScoringConfig } from "@/lib/api";
+import { calcDayPoints, DEFAULT_SCORING } from "@/lib/points";
 import { ShieldAlert, Trash2, ChevronDown, ChevronUp, Pencil, X, Check } from "lucide-react";
 import Dashboard from "@/pages/Dashboard";
 
-type Tab = "dashboard" | "teams" | "members" | "bonuses" | "activity" | "pin";
+type Tab = "dashboard" | "teams" | "members" | "bonuses" | "activity" | "scoring" | "pin";
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -65,7 +65,7 @@ export default function Admin() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(["dashboard", "teams", "members", "activity", "bonuses", "pin"] as Tab[]).map(t => (
+        {(["dashboard", "teams", "members", "activity", "bonuses", "scoring", "pin"] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
               tab === t ? "bg-primary text-white" : "border border-white/10 text-white/40 hover:text-white hover:border-white/20"
@@ -80,12 +80,8 @@ export default function Admin() {
       {tab === "members" && <ManageMembers />}
       {tab === "activity" && <MemberActivity />}
       {tab === "bonuses" && <ManageBonuses />}
-      {tab === "pin" && (
-        <div className="space-y-8">
-          <ChangePin />
-          <HrThresholdSetting />
-        </div>
-      )}
+      {tab === "scoring" && <ScoringSettings />}
+      {tab === "pin" && <ChangePin />}
     </div>
   );
 }
@@ -94,7 +90,7 @@ function MemberActivity() {
   const { data: members, isLoading: loadingMembers } = useQuery({ queryKey: ["members"], queryFn: getMembers });
   const { data: teams } = useQuery({ queryKey: ["teams"], queryFn: getTeams });
   const { data: logs, isLoading: loadingLogs } = useQuery({ queryKey: ["logs", "all"], queryFn: () => getLogs() });
-  const { data: hrThreshold = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
+  const { data: scoring = DEFAULT_SCORING } = useQuery({ queryKey: ["scoring"], queryFn: getScoringConfig });
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const isLoading = loadingMembers || loadingLogs;
@@ -110,7 +106,7 @@ function MemberActivity() {
       walk: log.walk, run: log.run, bike: log.bike,
       meal_plan: log.meal_plan, avg_hr: log.avg_hr,
       day_index: log.day_index, age: member.age,
-    }, hrThreshold), 0);
+    }, scoring), 0);
   };
 
   const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -179,7 +175,7 @@ function MemberActivity() {
                             walk: log.walk, run: log.run, bike: log.bike,
                             meal_plan: log.meal_plan, avg_hr: log.avg_hr,
                             day_index: log.day_index, age: member.age,
-                          }, hrThreshold) * 10) / 10;
+                          }, scoring) * 10) / 10;
                           return (
                             <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02]">
                               <td className="px-4 py-2.5 text-white/60">{log.week}</td>
@@ -559,57 +555,105 @@ function ManageBonuses() {
   );
 }
 
-function HrThresholdSetting() {
+function ScoringSettings() {
   const qc = useQueryClient();
-  const { data: current = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
-  const [value, setValue] = useState("");
+  const { data: current = DEFAULT_SCORING } = useQuery({ queryKey: ["scoring"], queryFn: getScoringConfig });
+  const [fields, setFields] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const displayPct = Math.round(current * 100);
+  const val = (key: string, fallback: number) =>
+    fields[key] !== undefined ? fields[key] : String(fallback);
+  const set = (key: string, v: string) => setFields(f => ({ ...f, [key]: v }));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const pct = parseFloat(value);
-    if (!value || isNaN(pct) || pct < 50 || pct > 100) {
-      setMsg({ text: "Enter a percentage between 50 and 100.", ok: false });
-      return;
+    const walkRun = parseFloat(val("walk_run", current.walk));
+    const bike = parseFloat(val("bike", current.bike));
+    const mealWd = parseFloat(val("meal_weekday", current.meal_weekday));
+    const mealWe = parseFloat(val("meal_weekend", current.meal_weekend));
+    const hrZone = parseFloat(val("hr_zone", current.hr_zone));
+    const hrPct = parseFloat(val("hr_threshold_pct", current.hr_threshold * 100));
+
+    if ([walkRun, bike, mealWd, mealWe, hrZone].some(v => isNaN(v) || v < 0)) {
+      setMsg({ text: "All point values must be 0 or greater.", ok: false }); return;
+    }
+    if (isNaN(hrPct) || hrPct < 50 || hrPct > 100) {
+      setMsg({ text: "HR threshold must be between 50 and 100.", ok: false }); return;
     }
     setSaving(true);
     try {
-      await setHrThreshold(pct / 100);
-      qc.invalidateQueries({ queryKey: ["hrThreshold"] });
+      await setScoringConfig({ walk_run: walkRun, bike, meal_weekday: mealWd, meal_weekend: mealWe, hr_zone: hrZone, hr_threshold: hrPct / 100 });
+      qc.invalidateQueries({ queryKey: ["scoring"] });
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
       qc.invalidateQueries({ queryKey: ["summary"] });
-      setMsg({ text: `HR threshold updated to ${pct}%.`, ok: true });
-      setValue("");
+      setMsg({ text: "Scoring updated successfully.", ok: true });
+      setFields({});
     } catch (err: any) {
-      setMsg({ text: err.message || "Failed to update threshold.", ok: false });
+      setMsg({ text: err.message || "Failed to save scoring.", ok: false });
     } finally {
       setSaving(false);
     }
   }
 
-  const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary";
+  const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary font-mono text-center";
   const lbl = "block text-xs uppercase tracking-wider text-white/40 font-bold mb-1.5";
 
   return (
-    <div className="max-w-sm">
+    <div className="max-w-lg">
       <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-        <h2 className="font-display font-bold uppercase tracking-wider text-white mb-1">HR Zone Threshold</h2>
-        <p className="text-white/30 text-xs mb-1">Current: <span className="text-primary font-bold">{displayPct}% of max HR</span></p>
-        <p className="text-white/30 text-xs mb-5">Members must sustain this percentage of their max heart rate for &gt;30 min to earn the +5 HR zone bonus.</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <h2 className="font-display font-bold uppercase tracking-wider text-white mb-1">Scoring Settings</h2>
+        <p className="text-white/30 text-xs mb-6">Adjust point values for all activity types. Changes apply to all future calculations and leaderboard totals.</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className={lbl}>New Threshold (%)</label>
-            <input type="number" min="50" max="100" step="1" value={value}
-              onChange={e => setValue(e.target.value)}
-              placeholder={`e.g. ${displayPct}`}
-              className={inp} />
+            <p className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3 border-b border-white/10 pb-2">Activity Miles</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={lbl}>Walk / Run (pts/mi)</label>
+                <input type="number" min="0" step="0.5" value={val("walk_run", current.walk)}
+                  onChange={e => set("walk_run", e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Bike (pts/mi)</label>
+                <input type="number" min="0" step="0.5" value={val("bike", current.bike)}
+                  onChange={e => set("bike", e.target.value)} className={inp} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3 border-b border-white/10 pb-2">Meal Plan</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={lbl}>Weekday (Mon–Fri) pts</label>
+                <input type="number" min="0" step="1" value={val("meal_weekday", current.meal_weekday)}
+                  onChange={e => set("meal_weekday", e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Weekend (Sat–Sun) pts</label>
+                <input type="number" min="0" step="1" value={val("meal_weekend", current.meal_weekend)}
+                  onChange={e => set("meal_weekend", e.target.value)} className={inp} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3 border-b border-white/10 pb-2">HR Zone</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={lbl}>HR Zone Bonus (pts)</label>
+                <input type="number" min="0" step="1" value={val("hr_zone", current.hr_zone)}
+                  onChange={e => set("hr_zone", e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>HR Threshold (%)</label>
+                <input type="number" min="50" max="100" step="1" value={val("hr_threshold_pct", current.hr_threshold * 100)}
+                  onChange={e => set("hr_threshold_pct", e.target.value)} className={inp} />
+              </div>
+            </div>
+            <p className="text-white/30 text-xs mt-2">Members must sustain this % of max HR for &gt;30 min to earn the HR zone bonus.</p>
           </div>
           {msg && <p className={`text-sm font-semibold ${msg.ok ? "text-green-400" : "text-red-400"}`}>{msg.text}</p>}
           <button type="submit" disabled={saving} className="w-full py-2.5 rounded-lg bg-primary text-white font-bold uppercase text-sm disabled:opacity-50">
-            {saving ? "Updating..." : "Update Threshold"}
+            {saving ? "Saving..." : "Save Scoring Changes"}
           </button>
         </form>
       </div>

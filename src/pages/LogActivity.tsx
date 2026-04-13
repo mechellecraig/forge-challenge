@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, getLogs, upsertLog, getHrThreshold } from "@/lib/api";
-import { calcDayPoints } from "@/lib/points";
+import { getTeams, getLogs, upsertLog, getScoringConfig } from "@/lib/api";
+import { calcDayPoints, DEFAULT_SCORING } from "@/lib/points";
 import { useAuth } from "@/lib/auth";
 import { Activity, Footprints, Bike, UtensilsCrossed, HeartPulse, Info } from "lucide-react";
 
@@ -74,7 +74,7 @@ export default function LogActivity() {
     await doSubmit();
   }
 
-  const { data: hrThreshold = 0.75 } = useQuery({ queryKey: ["hrThreshold"], queryFn: getHrThreshold });
+  const { data: scoring = DEFAULT_SCORING } = useQuery({ queryKey: ["scoring"], queryFn: getScoringConfig });
 
   const previewPts = member ? Math.round(calcDayPoints({
     walk: parseFloat(walkRun) || 0,
@@ -84,9 +84,9 @@ export default function LogActivity() {
     avg_hr: parseFloat(avgHr) || 0,
     day_index: dayIndex,
     age: member.age,
-  }, hrThreshold) * 10) / 10 : 0;
+  }, scoring) * 10) / 10 : 0;
 
-  const hrTarget = member ? Math.round((220 - member.age) * hrThreshold) : 0;
+  const hrTarget = member ? Math.round((220 - member.age) * scoring.hr_threshold) : 0;
   const hrHit = parseFloat(avgHr) > 0 && parseFloat(avgHr) >= hrTarget;
 
   const inp = "w-full bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary";
@@ -153,11 +153,11 @@ export default function LogActivity() {
         </p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
           {([
-            [Footprints, "Walk / Run", "3 pts per mile", "text-blue-400"],
-            [Bike, "Bike", "1 pt per mile", "text-yellow-400"],
-            [UtensilsCrossed, "Meal Plan (Mon–Fri)", "3 pts per day", "text-orange-400"],
-            [UtensilsCrossed, "Meal Plan (Sat–Sun)", "5 pts per day", "text-orange-400"],
-            [HeartPulse, "HR Zone Session", `+5 pts (≥${Math.round(hrThreshold * 100)}% max HR, >30 min)`, "text-red-400"],
+            [Footprints, "Walk / Run", `${scoring.walk} pts per mile`, "text-blue-400"],
+            [Bike, "Bike", `${scoring.bike} pt${scoring.bike !== 1 ? "s" : ""} per mile`, "text-yellow-400"],
+            [UtensilsCrossed, "Meal Plan (Mon–Fri)", `${scoring.meal_weekday} pts per day`, "text-orange-400"],
+            [UtensilsCrossed, "Meal Plan (Sat–Sun)", `${scoring.meal_weekend} pts per day`, "text-orange-400"],
+            [HeartPulse, "HR Zone Session", `+${scoring.hr_zone} pts (≥${Math.round(scoring.hr_threshold * 100)}% max HR, >30 min)`, "text-red-400"],
           ] as [any, string, string, string][]).map(([Icon, label, hint, color]) => (
             <div key={label} className="flex items-center gap-2 whitespace-nowrap">
               <Icon className={`w-3.5 h-3.5 shrink-0 ${color}`} />
@@ -189,8 +189,8 @@ export default function LogActivity() {
           <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 border-b border-white/10 pb-2 mb-4">Activity Miles</h3>
           <div className="grid grid-cols-2 gap-4">
             {([
-              ["Walk / Run", "3 pts/mi", walkRun, setWalkRun],
-              ["Bike", "1 pt/mi", bike, setBike],
+              ["Walk / Run", `${scoring.walk} pts/mi`, walkRun, setWalkRun],
+              ["Bike", `${scoring.bike} pt${scoring.bike !== 1 ? "s" : ""}/mi`, bike, setBike],
             ] as [string, string, string, (v: string) => void][]).map(([name, hint, val, setter]) => (
               <div key={name}>
                 <label className={lbl}>{name} <span className="text-white/20 normal-case font-normal">{hint}</span></label>
