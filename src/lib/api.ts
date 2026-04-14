@@ -117,15 +117,16 @@ const SCORING_KEYS = ["pts_walk_run", "pts_bike", "pts_meal_weekday", "pts_meal_
 export async function getScoringConfig(): Promise<ScoringConfig> {
   const { data } = await supabase.from("config").select("key, value").in("key", SCORING_KEYS);
   const map: Record<string, string> = Object.fromEntries((data || []).map((r: any) => [r.key, r.value]));
-  const walkRun = parseFloat(map.pts_walk_run) || DEFAULT_SCORING.walk;
+  const p = (v: string | undefined, fallback: number) => { const n = parseFloat(v ?? ""); return isNaN(n) ? fallback : n; };
+  const walkRun = p(map.pts_walk_run, DEFAULT_SCORING.walk);
   return {
     walk: walkRun,
     run: walkRun,
-    bike: parseFloat(map.pts_bike) || DEFAULT_SCORING.bike,
-    meal_weekday: parseFloat(map.pts_meal_weekday) || DEFAULT_SCORING.meal_weekday,
-    meal_weekend: parseFloat(map.pts_meal_weekend) || DEFAULT_SCORING.meal_weekend,
-    hr_zone: parseFloat(map.pts_hr_zone) || DEFAULT_SCORING.hr_zone,
-    hr_threshold: parseFloat(map.hrThreshold) || DEFAULT_SCORING.hr_threshold,
+    bike: p(map.pts_bike, DEFAULT_SCORING.bike),
+    meal_weekday: p(map.pts_meal_weekday, DEFAULT_SCORING.meal_weekday),
+    meal_weekend: p(map.pts_meal_weekend, DEFAULT_SCORING.meal_weekend),
+    hr_zone: p(map.pts_hr_zone, DEFAULT_SCORING.hr_zone),
+    hr_threshold: p(map.hrThreshold, DEFAULT_SCORING.hr_threshold),
   };
 }
 

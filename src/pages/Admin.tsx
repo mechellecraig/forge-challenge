@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs, getScoringConfig, setScoringConfig } from "@/lib/api";
+import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember, deleteMember, getBonuses, createBonus, updateBonus, deleteBonus, verifyPin, changePin, getLogs, getScoringConfig, setScoringConfig, ScoringConfig } from "@/lib/api";
 import { calcDayPoints, DEFAULT_SCORING } from "@/lib/points";
 import { ShieldAlert, Trash2, ChevronDown, ChevronUp, Pencil, X, Check } from "lucide-react";
 import Dashboard from "@/pages/Dashboard";
@@ -584,7 +584,8 @@ function ScoringSettings() {
     setSaving(true);
     try {
       await setScoringConfig({ walk_run: walkRun, bike, meal_weekday: mealWd, meal_weekend: mealWe, hr_zone: hrZone, hr_threshold: hrPct / 100 });
-      qc.invalidateQueries({ queryKey: ["scoring"] });
+      const newScoring: ScoringConfig = { walk: walkRun, run: walkRun, bike, meal_weekday: mealWd, meal_weekend: mealWe, hr_zone: hrZone, hr_threshold: hrPct / 100 };
+      qc.setQueryData(["scoring"], newScoring);
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
       qc.invalidateQueries({ queryKey: ["summary"] });
       setMsg({ text: "Scoring updated successfully.", ok: true });
