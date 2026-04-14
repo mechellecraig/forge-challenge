@@ -143,7 +143,7 @@ export async function setScoringConfig(updates: {
   if (updates.hr_threshold !== undefined) rows.push({ key: "hrThreshold", value: String(updates.hr_threshold) });
   if (rows.length === 0) return;
   for (const row of rows) {
-    const { error } = await supabase.from("config").update({ value: row.value }).eq("key", row.key);
+    const { error } = await supabase.rpc("upsert_config", { p_key: row.key, p_value: row.value });
     if (error) throw error;
   }
 }
