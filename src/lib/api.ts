@@ -142,8 +142,10 @@ export async function setScoringConfig(updates: {
   if (updates.hr_zone !== undefined) rows.push({ key: "pts_hr_zone", value: String(updates.hr_zone) });
   if (updates.hr_threshold !== undefined) rows.push({ key: "hrThreshold", value: String(updates.hr_threshold) });
   if (rows.length === 0) return;
-  const { error } = await supabase.from("config").upsert(rows, { onConflict: "key" });
-  if (error) throw error;
+  for (const row of rows) {
+    const { error } = await supabase.from("config").update({ value: row.value }).eq("key", row.key);
+    if (error) throw error;
+  }
 }
 
 // ── Admin PIN ─────────────────────────────────────────────────────────────────
