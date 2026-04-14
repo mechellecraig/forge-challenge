@@ -591,6 +591,7 @@ function ScoringSettings() {
       setMsg({ text: "Scoring updated successfully.", ok: true });
       setFields({});
     } catch (err: any) {
+      console.error("Scoring save error:", err);
       setMsg({ text: err.message || "Failed to save scoring.", ok: false });
     } finally {
       setSaving(false);
@@ -637,20 +638,20 @@ function ScoringSettings() {
             </div>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3 border-b border-white/10 pb-2">HR Zone</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3 border-b border-white/10 pb-2">HR Zone Bonus</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={lbl}>HR Zone Bonus (pts)</label>
-                <input type="number" min="0" step="1" value={val("hr_zone", current.hr_zone)}
-                  onChange={e => set("hr_zone", e.target.value)} className={inp} />
-              </div>
-              <div>
-                <label className={lbl}>HR Threshold (%)</label>
+                <label className={lbl}>Min. Heart Rate (% of max)</label>
                 <input type="number" min="50" max="100" step="1" value={val("hr_threshold_pct", current.hr_threshold * 100)}
                   onChange={e => set("hr_threshold_pct", e.target.value)} className={inp} />
               </div>
+              <div>
+                <label className={lbl}>Bonus Points Awarded</label>
+                <input type="number" min="0" step="1" value={val("hr_zone", current.hr_zone)}
+                  onChange={e => set("hr_zone", e.target.value)} className={inp} />
+              </div>
             </div>
-            <p className="text-white/30 text-xs mt-2">Members must sustain this % of max HR for &gt;30 min to earn the HR zone bonus.</p>
+            <p className="text-white/30 text-xs mt-2">Members earn the bonus points when their logged avg HR is at or above this % of their max HR (220 − age).</p>
           </div>
           {msg && <p className={`text-sm font-semibold ${msg.ok ? "text-green-400" : "text-red-400"}`}>{msg.text}</p>}
           <button type="submit" disabled={saving} className="w-full py-2.5 rounded-lg bg-primary text-white font-bold uppercase text-sm disabled:opacity-50">

@@ -112,7 +112,7 @@ export async function deleteBonus(id: string): Promise<void> {
 }
 
 // ── Scoring config ────────────────────────────────────────────────────────────
-const SCORING_KEYS = ["pts_walk_run", "pts_bike", "pts_meal_weekday", "pts_meal_weekend", "pts_hr_zone", "hrThreshold"];
+const SCORING_KEYS = ["pts_walk_run", "pts_bike", "pts_meal_weekday", "pts_meal_weekend", "pts_hr_zone", "pts_hr_threshold"];
 
 export async function getScoringConfig(): Promise<ScoringConfig> {
   const { data } = await supabase.from("config").select("key, value").in("key", SCORING_KEYS);
@@ -126,7 +126,7 @@ export async function getScoringConfig(): Promise<ScoringConfig> {
     meal_weekday: p(map.pts_meal_weekday, DEFAULT_SCORING.meal_weekday),
     meal_weekend: p(map.pts_meal_weekend, DEFAULT_SCORING.meal_weekend),
     hr_zone: p(map.pts_hr_zone, DEFAULT_SCORING.hr_zone),
-    hr_threshold: p(map.hrThreshold, DEFAULT_SCORING.hr_threshold),
+    hr_threshold: p(map.pts_hr_threshold, DEFAULT_SCORING.hr_threshold),
   };
 }
 
@@ -140,7 +140,7 @@ export async function setScoringConfig(updates: {
   if (updates.meal_weekday !== undefined) rows.push({ key: "pts_meal_weekday", value: String(updates.meal_weekday) });
   if (updates.meal_weekend !== undefined) rows.push({ key: "pts_meal_weekend", value: String(updates.meal_weekend) });
   if (updates.hr_zone !== undefined) rows.push({ key: "pts_hr_zone", value: String(updates.hr_zone) });
-  if (updates.hr_threshold !== undefined) rows.push({ key: "hrThreshold", value: String(updates.hr_threshold) });
+  if (updates.hr_threshold !== undefined) rows.push({ key: "pts_hr_threshold", value: String(updates.hr_threshold) });
   if (rows.length === 0) return;
   for (const row of rows) {
     const { error } = await supabase.rpc("upsert_config", { p_key: row.key, p_value: row.value });
