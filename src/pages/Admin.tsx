@@ -586,8 +586,9 @@ function ScoringSettings() {
       await setScoringConfig({ walk_run: walkRun, bike, meal_weekday: mealWd, meal_weekend: mealWe, hr_zone: hrZone, hr_threshold: hrPct / 100 });
       const newScoring: ScoringConfig = { walk: walkRun, run: walkRun, bike, meal_weekday: mealWd, meal_weekend: mealWe, hr_zone: hrZone, hr_threshold: hrPct / 100 };
       qc.setQueryData(["scoring"], newScoring);
-      qc.invalidateQueries({ queryKey: ["leaderboard"] });
-      qc.invalidateQueries({ queryKey: ["summary"] });
+      await qc.invalidateQueries({ queryKey: ["scoring"] });
+      await qc.invalidateQueries({ queryKey: ["leaderboard"] });
+      await qc.invalidateQueries({ queryKey: ["summary"] });
       setMsg({ text: "Scoring updated successfully.", ok: true });
       setFields({});
     } catch (err: any) {
