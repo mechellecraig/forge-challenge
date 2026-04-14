@@ -31,7 +31,7 @@ export default function SelectProfile() {
       if (error) throw error;
       // Refresh member data so auth context picks up the linked member
       qc.invalidateQueries({ queryKey: ["members"] });
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       setError("Failed to link your account. Please try again or contact your admin.");
       setSaving(false);
