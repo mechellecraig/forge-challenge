@@ -647,7 +647,7 @@ function ScoringSettings() {
                   onChange={e => set("hr_threshold_pct", e.target.value)} className={inp} />
               </div>
               <div>
-                <label className={lbl}>Bonus Points Awarded</label>
+                <label className={lbl}>HR Zone Points</label>
                 <input type="number" min="0" step="1" value={val("hr_zone", current.hr_zone)}
                   onChange={e => set("hr_zone", e.target.value)} className={inp} />
               </div>
