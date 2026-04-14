@@ -126,16 +126,16 @@ export default function MyStats() {
                 {
                   label: "Walk / Run",
                   miles: Math.round((stats.totalWalk + stats.totalRun) * 10) / 10,
-                  pts: Math.round((stats.totalWalk + stats.totalRun) * POINTS.walk * 10) / 10,
+                  pts: Math.round((stats.totalWalk + stats.totalRun) * scoring.walk * 10) / 10,
                   icon: Footprints,
-                  rate: `${POINTS.walk} pts/mi`,
+                  rate: `${scoring.walk} pts/mi`,
                 },
                 {
                   label: "Bike",
                   miles: stats.totalBike,
-                  pts: Math.round(stats.totalBike * POINTS.bike * 10) / 10,
+                  pts: Math.round(stats.totalBike * scoring.bike * 10) / 10,
                   icon: Bike,
-                  rate: `${POINTS.bike} pt/mi`,
+                  rate: `${scoring.bike} pt${scoring.bike !== 1 ? "s" : ""}/mi`,
                 },
               ].map(({ label, miles, pts, icon: Icon, rate }) => (
                 <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4">
@@ -157,14 +157,14 @@ export default function MyStats() {
               <HeartPulse className="w-4 h-4 text-primary" />
               <span className="text-sm text-white/40">HR Zone Days:</span>
               <span className="text-white font-bold">{stats.hrBonusDays}</span>
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">+{stats.hrBonusDays * POINTS.hr_zone} pts</span>
+              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">+{stats.hrBonusDays * scoring.hr_zone} pts</span>
             </div>
             <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
               <Activity className="w-4 h-4 text-primary" />
               <span className="text-sm text-white/40">Meal Plan:</span>
               <span className="text-white font-bold">{stats.mealPlanDays} days</span>
               <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">+{stats.mealPlanPoints} pts</span>
-              <span className="text-xs text-white/30">({POINTS.meal_weekday} weekday / {POINTS.meal_weekend} weekend)</span>
+              <span className="text-xs text-white/30">({scoring.meal_weekday} weekday / {scoring.meal_weekend} weekend)</span>
             </div>
           </div>
 
