@@ -1,4 +1,6 @@
-import { useState } from "react";
+const fs = require('fs');
+
+fs.writeFileSync('src/pages/SelectProfile.tsx', `import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getTeams, getMembers } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
@@ -103,3 +105,6 @@ export default function SelectProfile() {
     </div>
   );
 }
+`);
+
+console.log('SelectProfile.tsx updated - now signs out after linking so fresh login picks up member');
