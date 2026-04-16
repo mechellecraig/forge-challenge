@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase";
 
 const AuthContext = createContext({
@@ -14,6 +14,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(null);
   const [member, setMember] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Tracks whether we're mid-member-fetch after a sign-in so App doesn't
+  // prematurely show SelectProfile
+  const [memberLoading, setMemberLoading] = useState(false);
+  const initialised = useRef(false);
 
   async function fetchMember(userId: string) {
     const { data } = await supabase.from("members").select("*").eq("user_id", userId).single();
@@ -21,26 +25,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // On initial load, resolve the existing session first
+    // Resolve the initial session on mount — keeps the app in loading until done
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) await fetchMember(session.user.id);
+      initialised.current = true;
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      // Keep the app in loading state while we resolve the member,
-      // preventing a flash to SelectProfile between auth and member fetch
-      setLoading(true);
+      // Skip the INITIAL_SESSION event — getSession() above handles it
+      if (!initialised.current) return;
+
       setSession(session);
       setUser(session?.user ?? null);
+
       if (session?.user) {
+        // Hold the app in a "member loading" state so it doesn't flash SelectProfile
+        setMemberLoading(true);
         await fetchMember(session.user.id);
+        setMemberLoading(false);
       } else {
         setMember(null);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -52,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, member, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, member, loading: loading || memberLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
