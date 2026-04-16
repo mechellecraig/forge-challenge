@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    // On initial load, resolve the existing session first
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -29,10 +30,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // Keep the app in loading state while we resolve the member,
+      // preventing a flash to SelectProfile between auth and member fetch
+      setLoading(true);
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) await fetchMember(session.user.id);
-      else setMember(null);
+      if (session?.user) {
+        await fetchMember(session.user.id);
+      } else {
+        setMember(null);
+      }
       setLoading(false);
     });
 
