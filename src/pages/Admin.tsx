@@ -4,8 +4,9 @@ import { getTeams, createTeam, updateTeam, deleteTeam, getMembers, createMember,
 import { calcDayPoints, DEFAULT_SCORING } from "@/lib/points";
 import { ShieldAlert, Trash2, ChevronDown, ChevronUp, Pencil, X, Check } from "lucide-react";
 import Dashboard from "@/pages/Dashboard";
+import AdminAnnouncements from "@/pages/AdminAnnouncements";
 
-type Tab = "dashboard" | "teams" | "members" | "bonuses" | "activity" | "scoring" | "pin";
+type Tab = "dashboard" | "teams" | "members" | "bonuses" | "activity" | "announcements" | "scoring" | "pin";
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -65,7 +66,7 @@ export default function Admin() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(["dashboard", "teams", "members", "activity", "bonuses", "scoring", "pin"] as Tab[]).map(t => (
+        {(["dashboard", "teams", "members", "activity", "bonuses", "announcements", "scoring", "pin"] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
               tab === t ? "bg-primary text-white" : "border border-white/10 text-white/40 hover:text-white hover:border-white/20"
@@ -80,6 +81,7 @@ export default function Admin() {
       {tab === "members" && <ManageMembers />}
       {tab === "activity" && <MemberActivity />}
       {tab === "bonuses" && <ManageBonuses />}
+      {tab === "announcements" && <AdminAnnouncements />}
       {tab === "scoring" && <ScoringSettings />}
       {tab === "pin" && <ChangePin />}
     </div>

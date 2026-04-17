@@ -1,6 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Trophy, Users, Activity, User, ShieldAlert, LogOut, CircleUser } from "lucide-react";
+import { LayoutDashboard, Trophy, Users, Activity, User, ShieldAlert, LogOut, CircleUser, Megaphone } from "lucide-react";
+import { getLastViewed } from "../pages/Announcements";
+import { useQuery } from "@tanstack/react-query";
+import { listAnnouncements } from "../lib/announcements";
 import { useAuth } from "@/lib/auth";
+
+
 
 const NAV = [
   { href: "/", label: "Program Overview", icon: LayoutDashboard, adminOnly: false },
@@ -8,12 +13,24 @@ const NAV = [
   { href: "/teams", label: "Teams", icon: Users, adminOnly: false },
   { href: "/log", label: "Log Activity", icon: Activity, adminOnly: false },
   { href: "/me", label: "My Stats", icon: User, adminOnly: false },
+  { href: "/announcements", label: "Announcements", icon: Megaphone, adminOnly: false },
   { href: "/admin", label: "Admin", icon: ShieldAlert, adminOnly: true },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { member, signOut } = useAuth();
+
+  const { data: announcements = [] } = useQuery({
+    queryKey: ["announcements"],
+    queryFn: listAnnouncements,
+    enabled: !!member,
+  });
+  const lastViewed = getLastViewed();
+  const hasUnread = announcements.some((a) => {
+    if (!lastViewed) return true;
+    return new Date(a.created_at) > lastViewed;
+  });
 
   const visibleNav = NAV.filter(item => !item.adminOnly || member?.is_admin);
 
@@ -34,11 +51,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <nav className="flex items-center gap-0.5">
               {visibleNav.map(({ href, label, icon: Icon }) => {
                 const active = href === "/" ? location === "/" : location.startsWith(href);
+                const showUnreadDot = href === "/announcements" && hasUnread;
                 return (
                   <Link key={href} href={href}>
-                    <button className={"flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap " + (active ? "bg-primary text-white" : "text-white/50 hover:text-white hover:bg-white/5")}>
+                    <button className={"relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap " + (active ? "bg-primary text-white" : "text-white/50 hover:text-white hover:bg-white/5")}>
                       <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span className="hidden lg:inline">{label}</span>
+                      {showUnreadDot && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+                      )}
                     </button>
                   </Link>
                 );

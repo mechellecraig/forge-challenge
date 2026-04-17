@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import Leaderboard from "@/pages/Leaderboard";
 import Teams from "@/pages/Teams";
 import Overview from "@/pages/Overview";
+import Announcements from "./pages/Announcements";
 import LogActivity from "@/pages/LogActivity";
 import MyStats from "@/pages/MyStats";
 import Admin from "@/pages/Admin";
@@ -44,6 +45,7 @@ export default function App() {
     <Layout>
       <Switch>
         <Route path="/" component={Overview} />
+        <Route path="/announcements" component={Announcements} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/teams" component={Teams} />
         <Route path="/log" component={LogActivity} />
