@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Trophy, Users, Activity, User, ShieldAlert, LogOut, CircleUser, Megaphone } from "lucide-react";
+import { LayoutDashboard, Trophy, Activity, ShieldAlert, LogOut, CircleUser, Megaphone } from "lucide-react";
 import { getLastViewed } from "../pages/Announcements";
 import { useQuery } from "@tanstack/react-query";
 import { listAnnouncements } from "../lib/announcements";
@@ -10,10 +10,8 @@ import { useAuth } from "@/lib/auth";
 const NAV = [
   { href: "/", label: "Program Overview", icon: LayoutDashboard, adminOnly: false },
   { href: "/announcements", label: "Announcements", icon: Megaphone, adminOnly: false },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy, adminOnly: false },
-  { href: "/teams", label: "Teams", icon: Users, adminOnly: false },
+  { href: "/standings", label: "Standings", icon: Trophy, adminOnly: false },
   { href: "/log", label: "Log Activity", icon: Activity, adminOnly: false },
-  { href: "/me", label: "My Stats", icon: User, adminOnly: false },
   { href: "/admin", label: "Admin", icon: ShieldAlert, adminOnly: true },
 ];
 
