@@ -8,6 +8,7 @@ import Overview from "@/pages/Overview";
 import Announcements from "./pages/Announcements";
 import LogActivity from "@/pages/LogActivity";
 import MyStats from "@/pages/MyStats";
+import Tracking from "@/pages/Tracking";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import SelectProfile from "@/pages/SelectProfile";
@@ -44,8 +45,9 @@ export default function App() {
         <Route path="/standings" component={Standings} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/teams" component={Teams} />
-        <Route path="/log" component={LogActivity} />
+        <Route path="/log" component={Tracking} />
         <Route path="/me" component={MyStats} />
+        <Route path="/log-activity" component={LogActivity} />
         <Route path="/admin" component={Admin} />
         <Route path="/profile" component={Profile} />
         <Route><Redirect to="/standings" /></Route>
