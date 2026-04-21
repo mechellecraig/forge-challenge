@@ -116,7 +116,7 @@ export default function AdminAnnouncements() {
               onChange={(e) => setTitle(e.target.value)}
               maxLength={120}
               placeholder="e.g., Week 5 Challenge Announcement"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -129,7 +129,7 @@ export default function AdminAnnouncements() {
               onChange={(e) => setBody(e.target.value)}
               rows={6}
               placeholder="Write your announcement here. Line breaks are preserved."
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -174,8 +174,8 @@ export default function AdminAnnouncements() {
               {busy
                 ? "Saving…"
                 : editingId
-                ? "Save changes"
-                : "Post announcement"}
+                  ? "Save changes"
+                  : "Post announcement"}
             </button>
             {editingId && (
               <button
