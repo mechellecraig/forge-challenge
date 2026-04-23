@@ -139,9 +139,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       try {
         const { data } = await withTimeout(
-          supabase.from("members").select("*").eq("user_id", user.id).single(),
+          Promise.resolve(supabase.from("members").select("*").eq("user_id", user.id).single()),
           5000,
-          "fetchMember",
+          "fetchMember"
         );
         if (cancelled) return;
         setMember(data || null);
