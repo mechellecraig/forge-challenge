@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { supabase } from "./supabase";
 
 const AuthContext = createContext({
@@ -9,58 +9,166 @@ const AuthContext = createContext({
   signOut: async () => {},
 });
 
+// Wrap a promise with a timeout. If the promise doesn't resolve in `ms` milliseconds,
+// the wrapper rejects with a timeout error. This is the key defense against
+// Supabase's known hang-on-tab-suspension bug.
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [member, setMember] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  // Tracks whether we're mid-member-fetch after a sign-in so App doesn't
-  // prematurely show SelectProfile
-  const [memberLoading, setMemberLoading] = useState(false);
-  const initialised = useRef(false);
 
-  async function fetchMember(userId: string) {
-    const { data } = await supabase.from("members").select("*").eq("user_id", userId).single();
-    setMember(data || null);
-  }
+  // Track the current user ID so visibility handler can decide whether to re-fetch.
+  const currentUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Resolve the initial session on mount — keeps the app in loading until done
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) await fetchMember(session.user.id);
-      initialised.current = true;
+    let mounted = true;
+
+    async function loadSession() {
+      try {
+        const { data } = await withTimeout(
+          supabase.auth.getSession(),
+          5000,
+          "getSession",
+        );
+        if (!mounted) return;
+        const sess = data.session;
+        setSession(sess);
+        setUser(sess?.user ?? null);
+        currentUserIdRef.current = sess?.user?.id ?? null;
+      } catch (err) {
+        // getSession hung or failed. Best we can do is treat the user as logged-out.
+        // They'll see the login screen and can re-auth. Much better than a stuck loading screen.
+        console.warn(
+          "[auth] session load failed, treating as unauthenticated:",
+          err,
+        );
+        if (!mounted) return;
+        setSession(null);
+        setUser(null);
+        currentUserIdRef.current = null;
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadSession();
+
+    // Supabase official guidance: do NOT await other Supabase calls inside this callback.
+    // Doing so can cause deadlocks. We only update basic session state here; the member
+    // fetch happens in a separate effect that watches `user`.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (!mounted) return;
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      currentUserIdRef.current = sess?.user?.id ?? null;
+      if (!sess?.user) setMember(null);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      // Skip the INITIAL_SESSION event — getSession() above handles it
-      if (!initialised.current) return;
-
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        // Hold the app in a "member loading" state so it doesn't flash SelectProfile
-        setMemberLoading(true);
-        await fetchMember(session.user.id);
-        setMemberLoading(false);
-      } else {
-        setMember(null);
+    // Tab visibility handler — when the user returns after backgrounding, re-verify
+    // the session. If Supabase's client got corrupted during suspension (a known issue),
+    // this is our chance to recover without forcing a page refresh.
+    async function handleVisibility() {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const { data } = await withTimeout(
+          supabase.auth.getSession(),
+          5000,
+          "visibility getSession",
+        );
+        if (!mounted) return;
+        const sess = data.session;
+        // Only update if something meaningfully changed, to avoid state churn.
+        const newUserId = sess?.user?.id ?? null;
+        if (newUserId !== currentUserIdRef.current) {
+          setSession(sess);
+          setUser(sess?.user ?? null);
+          currentUserIdRef.current = newUserId;
+          if (!sess?.user) setMember(null);
+        }
+      } catch (err) {
+        console.warn("[auth] visibility session check failed:", err);
+        // Don't forcibly log the user out here — they may just be offline briefly.
+        // The app's own queries will surface errors if the session is really dead.
       }
-    });
+    }
 
-    return () => subscription.unsubscribe();
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
+
+  // Separate effect for member fetch. Runs whenever `user` changes.
+  // Kept out of the auth callback per Supabase's deadlock guidance.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMember() {
+      if (!user) {
+        setMember(null);
+        return;
+      }
+      try {
+        const { data } = await withTimeout(
+          Promise.resolve(supabase.from("members").select("*").eq("user_id", user.id).single()),
+          5000,
+          "fetchMember"
+        );
+        if (cancelled) return;
+        setMember(data || null);
+      } catch (err) {
+        console.warn("[auth] fetchMember failed:", err);
+        // On timeout, leave member as whatever it was. Don't flash null → SelectProfile.
+        // If the user truly has no member record, the initial load succeeded with null
+        // and we're already showing SelectProfile correctly.
+      }
+    }
+
+    loadMember();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   async function signOut() {
     await supabase.auth.signOut();
-    setUser(null); setSession(null); setMember(null);
+    setUser(null);
+    setSession(null);
+    setMember(null);
+    currentUserIdRef.current = null;
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, member, loading: loading || memberLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, member, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
