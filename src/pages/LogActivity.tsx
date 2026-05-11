@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTeams, getLogs, upsertLog, getScoringConfig } from "@/lib/api";
 import { calcDayPoints, DEFAULT_SCORING } from "@/lib/points";
 import { useAuth } from "@/lib/auth";
+import ActivityHistory from "@/components/ActivityHistory";
 import {
   Activity,
   Footprints,
@@ -411,6 +412,7 @@ export default function LogActivity() {
           {saving ? "Forging..." : "Strike the Anvil — Log Activity"}
         </button>
       </form>
+      <ActivityHistory />
     </div>
   );
 }
