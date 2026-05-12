@@ -10,19 +10,21 @@ export function weekDayToDate(
   week: number,
   dayIndex: number,
 ): Date {
-  const start = new Date(programStartDate);
+  // Parse as local date to avoid UTC timezone shift.
+  // Accepts "YYYY-MM-DD" or a longer ISO/timestamp string; only the date part is used.
+  const datePart = programStartDate.slice(0, 10);
+  const [year, month, day] = datePart.split("-").map(Number);
+  const result = new Date(year, month - 1, day);
   const offsetDays = (week - 1) * 7 + dayIndex;
-  const result = new Date(start);
-  result.setDate(start.getDate() + offsetDays);
+  result.setDate(result.getDate() + offsetDays);
   return result;
 }
 
 /**
- * Short, friendly date format like "Tue Nov 11".
+ * Short, friendly date format like "May 11".
  */
 export function formatLogDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
-    weekday: "short",
     month: "short",
     day: "numeric",
   });
