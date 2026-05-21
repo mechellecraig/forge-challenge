@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTeams, getMembers, getLogs, getScoringConfig } from "@/lib/api";
+import { getTeams, getMembers, getLogs, getScoringConfig, getLeaderboard } from "@/lib/api";
 import { calcDayPoints, DEFAULT_SCORING } from "@/lib/points";
 import { useAuth } from "@/lib/auth";
 import { Users, Shield } from "lucide-react";
@@ -10,6 +10,7 @@ export default function MyTeamView() {
   const { data: allMembers, isLoading: loadingMembers } = useQuery({ queryKey: ["members"], queryFn: getMembers });
   const { data: allLogs, isLoading: loadingLogs } = useQuery({ queryKey: ["logs", "all"], queryFn: () => getLogs() });
   const { data: scoring = DEFAULT_SCORING } = useQuery({ queryKey: ["scoring"], queryFn: getScoringConfig });
+  const { data: leaderboard } = useQuery({ queryKey: ["leaderboard", "all"], queryFn: () => getLeaderboard() });
 
   const isLoading = loadingMembers || loadingLogs;
 
@@ -70,7 +71,10 @@ export default function MyTeamView() {
     };
   }).sort((a, b) => b.total_points - a.total_points);
 
-  const teamTotal = stats.reduce((sum, s) => sum + s.total_points, 0);
+  // Team total = the team's official leaderboard score (averaged activity + bonuses).
+  // Pulled from getLeaderboard() so it always matches the Leaderboard tab.
+  const teamEntry = leaderboard?.entries.find(e => e.teamId === member.team_id);
+  const teamTotal = teamEntry?.totalPoints ?? 0;
 
   if (isLoading) {
     return <p className="text-white/30 text-center py-8">Loading your team...</p>;
@@ -85,7 +89,7 @@ export default function MyTeamView() {
           <p className="text-white/40 text-sm">{teammates.length} member{teammates.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="text-right">
-          <div className="font-display font-bold text-2xl text-primary">{Math.round(teamTotal).toLocaleString()}</div>
+          <div className="font-display font-bold text-2xl text-primary">{teamTotal.toLocaleString()}</div>
           <div className="text-xs text-white/30 uppercase tracking-wider">team total pts</div>
         </div>
       </div>
